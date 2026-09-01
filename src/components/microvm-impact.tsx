@@ -13,11 +13,11 @@ const POINTS = [
   },
   {
     title: "The shared-kernel tools are not obsolete",
-    body: "Seatbelt, Landlock, bubblewrap, and a well-cut container are the right default when the operator is you, the threat is accident, and latency must be zero. Claude Code and Codex are good because they ship that default inside the harness. yolobox is good because it hides $HOME without asking you to become a hypervisor person. Use them. Just do not confuse their policy with a wall.",
+    body: "Seatbelt, Landlock, bubblewrap, a well-cut container, and unprivileged LXC are the right default when the operator is you, the threat is accident, and latency must be low. nono, Claude Code, and Codex ship that as a process. yolobox hides $HOME. Incus gives the agent a machine. Use them. Just do not confuse their policy with a hardware wall.",
   },
   {
     title: "Pick the unit of isolation to match the unit of trust",
-    body: "A bash child is the unit for pair-programming. A container is the unit for a YOLO CLI on a laptop. A microVM is the unit for untrusted code, nested build, or a tenant. A snapshotted VM fleet is the unit for browser agents. hypeman and microsandbox exist because those last two units are now ordinary product requirements, not cloud-provider trivia.",
+    body: "A bash child is the unit for pair-programming (Claude, Codex, nono). An app container is the unit for a YOLO CLI that is still a process (yolobox). A system container is the unit for a laptop-shaped agent that must apt and nest Docker (Incus, Pere Villega). A microVM is the unit for untrusted code, nested build with a kernel wall, or a tenant. A snapshotted VM fleet is the unit for browser agents.",
   },
 ];
 

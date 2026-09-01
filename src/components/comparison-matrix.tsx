@@ -61,7 +61,7 @@ export function ComparisonMatrix() {
       </div>
 
       <div className="hidden overflow-x-auto rounded-xl shadow-[var(--shadow-border)] md:block">
-        <table className="min-w-[720px] w-full border-collapse text-sm">
+        <table className="min-w-[960px] w-full border-collapse text-sm">
           <thead className="bg-bg-elevated">
             <tr>
               <th className="sticky left-0 bg-bg-elevated px-4 py-3 text-left font-mono text-[11px] tracking-wide text-subtle uppercase">

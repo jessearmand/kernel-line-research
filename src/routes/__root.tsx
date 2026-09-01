@@ -15,7 +15,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Interactive comparison of AI agent sandboxing: yolobox, Docker sbx, microsandbox, Kernel hypeman, Claude Code, and Codex.",
+          "Interactive comparison of AI agent sandboxing: yolobox, Docker sbx, microsandbox, Kernel hypeman, Claude Code, Codex, nono, and Incus.",
       },
       { name: "theme-color", content: "#09090b" },
     ],

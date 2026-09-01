@@ -21,17 +21,16 @@ export function Hero() {
           <span className="mt-2 block text-muted">Everything else is a policy.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
-          yolobox, Docker sbx, microsandbox, and Kernel hypeman sit on three different
-          isolation primitives. Claude Code and Codex add a fourth: a harness that
-          sandboxes itself. This is a working comparison of those architectures, not a
-          vendor scorecard.
+          yolobox, Docker sbx, microsandbox, hypeman, Claude Code, Codex, nono, and
+          Incus sit on four isolation primitives. Process, app container, system
+          container, microVM — one question: whose kernel is it?
         </p>
         <dl className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border md:grid-cols-4">
           {[
-            { k: "Shared kernel", v: "Process + container" },
+            { k: "Shared kernel", v: "Process · app · system" },
             { k: "Dedicated kernel", v: "MicroVM" },
-            { k: "Wrappers", v: "yolobox · sbx" },
-            { k: "Runtimes", v: "msb · hypeman" },
+            { k: "Wrappers", v: "nono · yolobox · sbx" },
+            { k: "Machines", v: "Incus · msb · hypeman" },
           ].map((item) => (
             <div key={item.k} className="bg-bg-elevated px-4 py-4 md:px-5 md:py-5">
               <dt className="font-mono text-[11px] tracking-wide text-subtle uppercase">{item.k}</dt>
@@ -50,14 +49,15 @@ export function Spectrum() {
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <p className="font-mono text-xs tracking-[0.18em] text-subtle uppercase">01 · Spectrum</p>
         <h2 className="mt-3 max-w-3xl text-2xl font-medium tracking-tight">
-          Three families. Six products. One question: whose kernel is it?
+          Four families. Eight products. One question: whose kernel is it?
         </h2>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted">
-          A process sandbox and a container both ask the host kernel to please isolate a
-          workload. A microVM boots a second kernel so that question never reaches the
-          host. That is the entire argument, and it has costs.
+          Process sandboxes, app containers, and system containers all ask the host
+          kernel to please isolate a workload. A microVM boots a second kernel so that
+          question never reaches the host. System containers are the missing row:
+          a full Linux machine, still that kernel.
         </p>
-        <ol className="mt-10 grid gap-3 md:grid-cols-3">
+        <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {FAMILIES.map((fam, i) => (
             <li
               key={fam.id}

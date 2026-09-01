@@ -35,6 +35,16 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
+            <a className="hover:text-fg" href="https://nono.sh/">
+              nono.sh · github.com/nolabs-ai/nono
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://perevillega.com/posts/2026-03-03-ai-sandbox-coding-agents/">
+              Pere Villega: Sandbox for Claude · Incus
+            </a>
+          </li>
+          <li>
             <a className="hover:text-fg" href="https://linuxcontainers.org/incus/docs/main/container-environment/">
               Incus container environment · Colima Incus runtime
             </a>

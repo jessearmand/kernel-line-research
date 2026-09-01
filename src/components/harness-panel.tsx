@@ -4,7 +4,7 @@ export function HarnessPanel() {
   return (
     <div className="space-y-6">
       <div className="overflow-x-auto rounded-xl shadow-[var(--shadow-border)]">
-        <table className="min-w-[800px] w-full border-collapse text-sm">
+        <table className="min-w-[1100px] w-full border-collapse text-sm">
           <thead className="bg-bg-elevated">
             <tr>
               <th className="px-4 py-3 text-left font-mono text-[11px] tracking-wide text-subtle uppercase">
@@ -31,19 +31,23 @@ export function HarnessPanel() {
           </tbody>
         </table>
       </div>
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {[
           {
             t: "Wrappers",
-            d: "yolobox and Docker sbx exist to launch someone else's CLI in YOLO mode. Compatibility is the product: skip-permissions flags, real project paths, a box the agent can sudo inside.",
+            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container. sbx is a microVM with a private engine.",
           },
           {
             t: "Harness sandboxes",
-            d: "Claude Code and Codex sandbox themselves. You don't wrap them unless you want a thicker outer box. Claude leans on hooks + a bash sandbox. Codex leans on a default-on kernel policy and default-off network.",
+            d: "Claude Code and Codex sandbox themselves. You wrap them with nono/yolobox/sbx only if you want a thicker outer box. Claude leans on hooks + bash. Codex leans on default-on kernel policy and default-off network.",
+          },
+          {
+            t: "System containers",
+            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones.",
           },
           {
             t: "Runtimes",
-            d: "microsandbox and hypeman do not care which model you picked. They run OCI (or an SDK exec) as a VM. You image Claude into them if you want; their native client is your code, not Anthropic's CLI.",
+            d: "microsandbox and hypeman run OCI as a VM. You image Claude into them if you want; their native client is your code, not Anthropic's CLI.",
           },
         ].map((x) => (
           <article key={x.t} className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">

@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "#spectrum", label: "Spectrum" },
   { href: "#stack", label: "Stack" },
-  { href: "#systems", label: "Six systems" },
+  { href: "#systems", label: "Systems" },
+  { href: "#need", label: "Incus" },
   { href: "#matrix", label: "Matrix" },
   { href: "#threats", label: "Threats" },
   { href: "#harness", label: "Harness" },

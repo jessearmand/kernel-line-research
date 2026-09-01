@@ -108,7 +108,9 @@ export function StackExplorer() {
             <p className="mt-4 text-sm leading-relaxed text-fg">
               {family === "microvm"
                 ? "A kernel CVE inside the agent dies in the guest unless the VMM is also wrong. That is the MicroVM impact: you moved the trusted computing base from 'every syscall on this laptop' to 'this VMM plus the hypervisor'."
-                : "There is no second kernel. Namespaces, Seatbelt, and Landlock are all asking the same kernel that the attacker is already talking to. Isolation here is a policy, and policies have holes."}
+                : family === "system"
+                  ? "Unprivileged LXC maps container root to a high host uid, and AppArmor is on. That is a better accident story than stock Docker. The kernel is still this one. Pere Villega's Sandbox for Claude lives here: a machine, not a wall."
+                  : "There is no second kernel. Namespaces, Seatbelt, and Landlock are all asking the same kernel that the attacker is already talking to. Isolation here is a policy, and policies have holes."}
             </p>
           </div>
           <div className="mt-8 border-t border-border pt-4">

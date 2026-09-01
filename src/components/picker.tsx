@@ -3,13 +3,14 @@ import { SYSTEMS, type SystemId } from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Job = "wrap" | "embed" | "browser" | "pair";
+type Job = "wrap" | "embed" | "browser" | "pair" | "machine";
 type Threat = "accident" | "hostile" | "tenant";
 type DockerNeed = "yes" | "no";
 type Where = "laptop" | "cloud" | "embed";
 
 const JOBS: { id: Job; label: string; hint: string }[] = [
   { id: "wrap", label: "Wrap a coding CLI", hint: "Claude, Codex, Gemini, Copilot, YOLO" },
+  { id: "machine", label: "Agent needs a full Linux machine", hint: "apt, systemd, sudo, nested Docker" },
   { id: "embed", label: "Execute untrusted code", hint: "Your product runs model-written programs" },
   { id: "browser", label: "Browser agents at scale", hint: "Cloud Chromium, snapshots, tenants" },
   { id: "pair", label: "Interactive pair-programming", hint: "Stay in the repo, don't wrap anything" },
@@ -33,6 +34,13 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
       why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs.",
     };
   }
+  if (job === "machine") {
+    return {
+      winner: "incus",
+      also: threat === "hostile" ? ["docker-sbx"] : ["yolobox", "docker-sbx"],
+      why: "You wanted a laptop, not a process. Incus system containers are that shape: systemd, apt, sudo, nested Docker, CoW clones. Pere Villega's Sandbox for Claude is the worked example. Promote to sbx the moment the threat includes a kernel CVE — Incus LXC still shares the host kernel.",
+    };
+  }
   if (job === "embed") {
     return {
       winner: "microsandbox",
@@ -45,13 +53,13 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
       return {
         winner: "codex",
         also: ["claude-code", "docker-sbx"],
-        why: "Stay in the harness. Codex is default-on, network-off, kernel-enforced. Claude Code is faster to live with (allowlist proxy, richer hooks) and weaker on egress. Put either inside sbx if the threat includes a kernel bug or docker.sock.",
+        why: "Stay in the harness. Codex is default-on, network-off, kernel-enforced. Claude Code is faster to live with (allowlist proxy, richer hooks) and weaker on egress. nono if you want the same kernel fence around whichever CLI, with a tighter box per tool. Put any of them inside sbx if the threat includes a kernel bug or docker.sock.",
       };
     }
     return {
       winner: "claude-code",
-      also: ["codex"],
-      why: "You wanted low friction on a trusted machine. Claude's bash sandbox plus permission hooks is the least architecture you can run. Switch Codex on if you want deny-by-default network without thinking about it.",
+      also: ["nono", "codex"],
+      why: "You wanted low friction on a trusted machine. Claude's bash sandbox plus permission hooks is the least architecture you can run. nono if you want the fence around the whole CLI and each tool, not just bash. Switch Codex on if you want deny-by-default network without thinking about it.",
     };
   }
   // wrap
@@ -63,9 +71,9 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     };
   }
   return {
-    winner: "yolobox",
-    also: ["docker-sbx", "claude-code"],
-    why: "You want YOLO on a laptop and you are defending against carelessness, not a 0-day. yolobox hides $HOME, keeps the real project path, and lets the agent sudo. Promote to sbx the moment nested Docker or a hostile threat model appears.",
+    winner: "nono",
+    also: ["yolobox", "claude-code"],
+    why: "You want YOLO on a laptop, no nested Docker, defending against carelessness. nono wraps whichever CLI in Landlock/Seatbelt with a tighter box per tool and phantom secrets — zero image, zero VM. yolobox if you also need to hide $HOME behind a container rootfs. Promote to sbx or Incus the moment the agent needs a machine or an engine.",
   };
 }
 
@@ -159,7 +167,7 @@ export function Picker() {
         <h3 className="mt-2 text-2xl font-medium tracking-tight">{winner.name}</h3>
         <p className="mt-1 text-sm text-muted">{winner.short}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Badge tone={winner.family === "microvm" ? "micro" : winner.family === "container" ? "warn" : "shared"}>
+          <Badge tone={winner.family === "microvm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
             {winner.family}
           </Badge>
           <Badge>{winner.kernel} kernel</Badge>

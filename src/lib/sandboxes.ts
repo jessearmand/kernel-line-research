@@ -1,4 +1,4 @@
-export type Family = "process" | "container" | "microvm";
+export type Family = "process" | "container" | "system" | "microvm";
 export type Verdict = "contained" | "partial" | "exposed" | "n/a";
 export type Score = 1 | 2 | 3 | 4 | 5;
 
@@ -8,7 +8,9 @@ export type SystemId =
   | "microsandbox"
   | "hypeman"
   | "claude-code"
-  | "codex";
+  | "codex"
+  | "nono"
+  | "incus";
 
 export type System = {
   id: SystemId;
@@ -103,6 +105,25 @@ export const FAMILIES: ArchFamily[] = [
     ],
   },
   {
+    id: "system",
+    name: "System container",
+    kernel: "Shared host kernel",
+    isolation: "Unprivileged LXC: full distro, user namespace, AppArmor, idmap",
+    startup: "Milliseconds from a CoW snapshot; seconds from an image",
+    overhead: "A full OS, still no second kernel",
+    escape: "A kernel exploit escapes every container on the host — same as Docker",
+    nestedDocker: "First-class with security.nesting=true, no host docker.sock",
+    bestFor: "When the agent needs a machine — systemd, apt, sudo, nested Docker, long-lived boxes — not a process and not a microVM",
+    layers: [
+      { id: "hw", label: "Hardware", kind: "hw", blurb: "Still no hypervisor hop. System containers are a Linux kernel ABI, which is why a Mac must boot a Linux VM first." },
+      { id: "host-kernel", label: "Host kernel — shared", kind: "host", blurb: "The same wall as Docker. Unprivileged uid 0 inside maps to 100000+ on the host, so an escape lands as an unprivileged user — until the bug is in this kernel." },
+      { id: "lxc", label: "LXC · user ns · AppArmor · idmap", kind: "boundary", blurb: "liblxc, not runc. A system container is a machine-shaped namespace: own PID 1, own /sbin/init, own network namespace. Harder default than stock Docker. Not a dedicated kernel." },
+      { id: "distro", label: "Full distro · systemd · apt", kind: "guest", blurb: "This is the product difference. The agent can apt install, sudo, start daemons, and ssh in. Docker's unit is a process; Incus's unit is a machine that still shares your kernel." },
+      { id: "nested", label: "Nested Docker (optional)", kind: "guest", blurb: "security.nesting=true gives the instance its own dockerd. The host socket stays off. This is why people pick Incus over yolobox when the agent must compose." },
+      { id: "agent", label: "Agent as a user on a machine", kind: "workload", blurb: "Claude Code, Codex, or anything else is just software you installed. Pere Villega's Sandbox for Claude is this layer: one Incus box per project, golden-image clone, agent inside." },
+    ],
+  },
+  {
     id: "microvm",
     name: "MicroVM",
     kernel: "Dedicated guest kernel",
@@ -165,6 +186,50 @@ export const SYSTEMS: System[] = [
     sources: [
       { label: "yolobox.dev", href: "https://yolobox.dev/" },
       { label: "github.com/finbarr/yolobox", href: "https://github.com/finbarr/yolobox" },
+    ],
+  },
+  {
+    id: "incus",
+    name: "Incus",
+    short: "Linux system containers",
+    maker: "Linux Containers",
+    family: "system",
+    familyNote: "System containers share the host kernel and run a full distro (PID 1 = /sbin/init). That is not Docker, and it is not a microVM. Incus --vm is a different product: QEMU, dedicated kernel, nested virt on a Mac. This row is the LXC path.",
+    oneLiner: "Give the agent a machine — apt, systemd, sudo, nested Docker — without paying for a second kernel.",
+    role: "runtime",
+    vmm: "None for containers (liblxc). QEMU/KVM only if you pass --vm.",
+    kernel: "shared",
+    openSource: "Apache-2.0",
+    platforms: "Linux native. macOS via a Linux VM (Colima, OrbStack) — Darwin cannot host LXC.",
+    startup: "Image launch in seconds; btrfs/zfs CoW clone in milliseconds from a golden snapshot.",
+    overhead: "A full OS, densely packed. No hypervisor tax on the LXC path.",
+    workspace: "Instance disk, profiles, snapshots. Bind-mount the project if you want a live tree; golden images if you want disposable machines.",
+    network: "Per-instance nic on an Incus bridge. Isolated from siblings unless you wire it. Docker on the same host is a known iptables fight.",
+    nestedDocker: "Yes, the documented path: security.nesting=true, host-loaded kernel modules, optional /.dockerenv. No host docker.sock. This is a reason people pick Incus over an app container.",
+    harness: "Not a Claude/Codex wrapper. You install the agent inside the machine. Pere Villega's Sandbox for Claude is the worked example: `sandbox my-api --claude` drops you into Claude Code in its own Incus box.",
+    useCases: [
+      "Pere Villega, Sandbox for Claude — one Incus system container per project, btrfs golden images, nested Docker, tmux of several Claudes. The agent needs a laptop, not a process: apt, systemd, sudo, compose.",
+      "Nested Docker without handing over the host socket",
+      "Dense long-lived Linux tenancy: labs, CI runners, VPS-shaped boxes, snapshots, profiles",
+    ],
+    notFor: [
+      "Kernel isolation of untrusted codegen — still the host kernel",
+      "A drop-in yolobox/nono wrap of a CLI on Darwin",
+      "Millisecond embeddable sandboxes (that's microsandbox or nono)",
+    ],
+    security: "Unprivileged by default: container root is a high host uid. AppArmor, seccomp, idmaps. Stronger accident and escape-to-user story than stock Docker. A kernel CVE is still a host CVE. Privileged containers and security.nesting widen the hole — do not treat nesting as a microVM.",
+    caveats: [
+      "Linux ABI. On a Mac you first boot OrbStack/Colima; Incus --vm then needs nested virt (M3+, macOS 15+)",
+      "Nesting Docker can stomp iptables/sysctl for other instances",
+      "OCI application containers exist in Incus too — do not confuse those with system containers",
+    ],
+    scores: { isolation: 3, performance: 4, harnessFit: 3, untrustedCode: 2, laptopDx: 3 },
+    layers: ["hw", "host-kernel", "lxc", "distro", "nested", "agent"],
+    sources: [
+      { label: "Incus containers vs VMs", href: "https://linuxcontainers.org/incus/docs/main/explanation/containers_and_vms/" },
+      { label: "Incus FAQ: Docker inside", href: "https://linuxcontainers.org/incus/docs/main/faq/" },
+      { label: "Pere Villega: Sandbox for Claude", href: "https://perevillega.com/posts/2026-03-03-ai-sandbox-coding-agents/" },
+      { label: "github.com/pvillega/sandbox-claude", href: "https://github.com/pvillega/sandbox-claude" },
     ],
   },
   {
@@ -377,6 +442,48 @@ export const SYSTEMS: System[] = [
       { label: "codex linux-sandbox", href: "https://github.com/openai/codex/blob/main/codex-rs/linux-sandbox/README.md" },
     ],
   },
+  {
+    id: "nono",
+    name: "nono",
+    short: "Capability shell · Landlock / Seatbelt",
+    maker: "nolabs (Luke Hinds)",
+    family: "process",
+    familyNote: "A kernel-enforced capability shell, not a container and not a VM. Landlock on Linux, Seatbelt on macOS. The split vs Claude Code / Codex: the agent gets a session sandbox, and each tool call gets a narrower, invocation-scoped child sandbox the agent cannot widen. Secrets stay with the supervisor as phantom tokens.",
+    oneLiner: "Zero-setup wrap of any agent: session sandbox plus a brokered sandbox per tool, with secrets that never enter the child.",
+    role: "wrapper",
+    vmm: "None — Landlock / Seatbelt. No daemon, no image, no VM.",
+    kernel: "shared",
+    openSource: "Apache-2.0",
+    platforms: "macOS, Linux, Windows via WSL2",
+    startup: "Process spawn. Claimed zero latency, zero disk.",
+    overhead: "A policy and a proxy. Kilobytes, not a machine.",
+    workspace: "Profile grants, usually the project tree. Tool children get their own filesystem and credential slice — they do not inherit the agent's --allow.",
+    network: "nono proxy, L7 method/path policy. Real credentials injected at the boundary and zeroised on exit. The child sees a phantom token.",
+    nestedDocker: "Not a container runtime. Deny docker.sock in the profile or it is the same Unix-socket hole as any process sandbox.",
+    harness: "Wraps Claude Code, Codex, OpenCode, Copilot, Pi, Hermes, OpenClaw, Goose, Qwen. Signed profiles from registry.nono.sh. Fork and extend; no harness rewrite.",
+    useCases: [
+      "Wrap whichever CLI you actually use, today, with no image and no VM",
+      "Per-tool least privilege: gh/git/kubectl in a tighter box than the agent session",
+      "Keep GitHub/cloud tokens off the agent's filesystem",
+    ],
+    notFor: [
+      "A kernel-exploit or multi-tenant threat model",
+      "Giving the agent a private Docker engine",
+      "A full-machine environment (that's Incus, not a process policy)",
+    ],
+    security: "Kernel-enforced, irreversible once applied — there is no API to unsandbox from inside. Stronger than Claude's bash-only box because tools are brokered separately. Still a policy on the host kernel. A Landlock/Seatbelt miss or a kernel bug is a host bug.",
+    caveats: [
+      "The workspace you granted is live and writable",
+      "Policy quality is the product — a sloppy profile is Seatbelt with extra steps",
+      "Windows is WSL2, not a native job object sandbox",
+    ],
+    scores: { isolation: 3, performance: 5, harnessFit: 5, untrustedCode: 2, laptopDx: 5 },
+    layers: ["hw", "host-kernel", "policy", "agent", "bash"],
+    sources: [
+      { label: "nono.sh", href: "https://nono.sh/" },
+      { label: "github.com/nolabs-ai/nono", href: "https://github.com/nolabs-ai/nono" },
+    ],
+  },
 ];
 
 export const THREATS: Threat[] = [
@@ -392,6 +499,8 @@ export const THREATS: Threat[] = [
       hypeman: { verdict: "contained", note: "OCI guest disk. Your laptop home is not in the picture." },
       "claude-code": { verdict: "partial", note: "Sandboxed bash cannot write outside the workspace by default. Unsandboxed fallback, disabled FS isolation, or a non-bash tool can still reach home." },
       codex: { verdict: "contained", note: "workspace-write cannot touch $HOME. danger-full-access can. Cloud clone never saw your home." },
+      nono: { verdict: "contained", note: "Home is outside the grant unless the profile added it. A tool sandbox cannot widen that grant from inside." },
+      incus: { verdict: "contained", note: "The instance has its own rootfs. Host $HOME appears only if you bind-mounted it (Pere Villega's default is that you did not)." },
     },
   },
   {
@@ -406,6 +515,8 @@ export const THREATS: Threat[] = [
       hypeman: { verdict: "contained", note: "Guest kernel on Firecracker, Cloud Hypervisor, QEMU, or Apple virt." },
       "claude-code": { verdict: "exposed", note: "Seatbelt/bubblewrap are policies on the host kernel." },
       codex: { verdict: "partial", note: "Local CLI: host kernel, exposed. Cloud task: contained in OpenAI's isolated environment." },
+      nono: { verdict: "exposed", note: "Landlock and Seatbelt are still this kernel. no daemon, no VM — and no second kernel." },
+      incus: { verdict: "exposed", note: "System containers share the host kernel. Unprivileged uid maps soften an escape-to-root; they do not stop a kernel LPE. Incus --vm would contain this; that is not this row." },
     },
   },
   {
@@ -420,6 +531,8 @@ export const THREATS: Threat[] = [
       hypeman: { verdict: "contained", note: "The control plane is hypeman's API, not the host docker socket." },
       "claude-code": { verdict: "exposed", note: "Unix sockets are a documented bypass class if reachable from the sandbox." },
       codex: { verdict: "partial", note: "Local: same socket class if present. Cloud: not your daemon." },
+      nono: { verdict: "partial", note: "Deny the socket in the profile and it is closed. Allow docker or mount the socket and it is the same hole as Claude Code." },
+      incus: { verdict: "contained", note: "The point of security.nesting: a dockerd inside the instance, not /var/run/docker.sock on the host." },
     },
   },
   {
@@ -434,6 +547,8 @@ export const THREATS: Threat[] = [
       hypeman: { verdict: "contained", note: "No host home. Egress can be proxied. Anything baked into the OCI image is guest-visible." },
       "claude-code": { verdict: "partial", note: "Credential file/env deny or mask, plus proxy substitution. Default disk reads are wide. Network is allowlist, not off." },
       codex: { verdict: "contained", note: "Default-deny network is the winning control. Local still sees the workspace. Cloud sees only the clone." },
+      nono: { verdict: "contained", note: "Phantom tokens: the child never holds GH_TOKEN. The proxy injects the real secret at the boundary and zeroises it. Workspace .env is still your problem." },
+      incus: { verdict: "partial", note: "Host creds stay out unless you passed them in. Egress is whatever the instance's nic can reach — Incus is not a secret proxy." },
     },
   },
   {
@@ -448,6 +563,8 @@ export const THREATS: Threat[] = [
       hypeman: { verdict: "partial", note: "Works on an OCI guest. Your laptop repo is only at risk if you exported it in." },
       "claude-code": { verdict: "exposed", note: "The workspace is the point. git metadata has some protection; source files do not." },
       codex: { verdict: "partial", note: "Local workspace-write: exposed. Cloud clone: the laptop copy survives; you review a PR." },
+      nono: { verdict: "exposed", note: "The grant is the worktree. Tool sandboxes do not snapshot your git history." },
+      incus: { verdict: "partial", note: "On a golden-image clone the laptop repo is safe until you bind-mounted it. Pere Villega bind-mounts the project — then a wipe is real, like yolobox." },
     },
   },
   {
@@ -462,6 +579,8 @@ export const THREATS: Threat[] = [
       hypeman: { verdict: "contained", note: "OCI-in-VM plus optional GPU. You are already in the 'run a machine' business." },
       "claude-code": { verdict: "exposed", note: "Uses whatever Docker is on the host. Isolation and docker.sock do not mix." },
       codex: { verdict: "partial", note: "Local: host Docker, same tension. Cloud: only if the environment image provides an engine." },
+      nono: { verdict: "exposed", note: "Wraps the CLI, does not give it an engine. Compose means the host Docker or a denied socket." },
+      incus: { verdict: "contained", note: "This is a primary Incus use case. Nested dockerd in the system container; host socket stays off. Heavier than sbx, cheaper than a dedicated kernel." },
     },
   },
   {
@@ -476,6 +595,8 @@ export const THREATS: Threat[] = [
       hypeman: { verdict: "contained", note: "This is Kernel's production path for browser agents, with snapshots and ingress." },
       "claude-code": { verdict: "exposed", note: "A single-user IDE harness." },
       codex: { verdict: "partial", note: "Local: no. Cloud: OpenAI is the multi-tenant operator, not you." },
+      nono: { verdict: "exposed", note: "A laptop wrapper. Shared kernel, one operator." },
+      incus: { verdict: "partial", note: "This is what Incus clustering and unprivileged LXC are for — dense tenancy on Linux. Still the host kernel. Hostile tenants that need a kernel wall want --vm or a microVM." },
     },
   },
   {
@@ -508,6 +629,14 @@ export const THREATS: Threat[] = [
         verdict: "n/a",
         note: "Same. Local sessions share the host. Cloud tasks are separate clones.",
       },
+      nono: {
+        verdict: "n/a",
+        note: "Two `nono run` are two process trees. Cheap. They are not machines.",
+      },
+      incus: {
+        verdict: "contained",
+        note: "Many system containers per host is the design. Pere Villega's `sandbox backend frontend --claude` is two Incus boxes in tmux, each with its own Docker. On a Mac they still share the one Colima/OrbStack Linux VM.",
+      },
     },
   },
 ];
@@ -531,6 +660,8 @@ export const HARNESSES = [
       hypeman: "Run inside a guest if you image it",
       "claude-code": "Native",
       codex: "—",
+      nono: "Wrap + signed profile",
+      incus: "Install inside the machine",
     } as Record<SystemId, string>,
   },
   {
@@ -543,6 +674,8 @@ export const HARNESSES = [
       hypeman: "Run inside a guest if you image it",
       "claude-code": "—",
       codex: "Native",
+      nono: "Wrap + signed profile",
+      incus: "Install inside the machine",
     } as Record<SystemId, string>,
   },
   {
@@ -555,6 +688,8 @@ export const HARNESSES = [
       hypeman: "Bring your own image",
       "claude-code": "—",
       codex: "—",
+      nono: "Wrap + signed profile",
+      incus: "Install inside the machine",
     } as Record<SystemId, string>,
   },
   {
@@ -567,6 +702,8 @@ export const HARNESSES = [
       hypeman: "Bring your own image",
       "claude-code": "—",
       codex: "—",
+      nono: "Wrap + signed profile",
+      incus: "Install inside the machine",
     } as Record<SystemId, string>,
   },
   {
@@ -579,6 +716,8 @@ export const HARNESSES = [
       hypeman: "First-class OCI + API",
       "claude-code": "No",
       codex: "No",
+      nono: "Any CLI via a profile",
+      incus: "OCI or a full distro",
     } as Record<SystemId, string>,
   },
   {
@@ -591,6 +730,8 @@ export const HARNESSES = [
       hypeman: "Kernel's production path",
       "claude-code": "Computer-use is the host",
       codex: "Not this product",
+      nono: "No",
+      incus: "If you image a browser into the machine",
     } as Record<SystemId, string>,
   },
 ];
@@ -612,6 +753,8 @@ export const MATRIX_ROWS: {
       hypeman: "CH / Firecracker / QEMU / HVF",
       "claude-code": "Seatbelt + bubblewrap",
       codex: "Seatbelt + bwrap / Landlock",
+      nono: "Landlock + Seatbelt + tool broker",
+      incus: "Unprivileged LXC",
     },
   },
   {
@@ -625,6 +768,8 @@ export const MATRIX_ROWS: {
       hypeman: "Dedicated guest",
       "claude-code": "Shared host",
       codex: "Shared locally; isolated in cloud",
+      nono: "Shared host",
+      incus: "Shared host (LXC). Dedicated if --vm",
     },
   },
   {
@@ -638,6 +783,8 @@ export const MATRIX_ROWS: {
       hypeman: "Sandbox infrastructure",
       "claude-code": "Harness (built-in)",
       codex: "Harness (built-in)",
+      nono: "Agent wrapper",
+      incus: "Machine runtime",
     },
   },
   {
@@ -651,6 +798,8 @@ export const MATRIX_ROWS: {
       hypeman: "hypeman server (systemd / launchd)",
       "claude-code": "None",
       codex: "None locally; OpenAI cloud for app",
+      nono: "None (child process + proxy)",
+      incus: "incusd on Linux",
     },
   },
   {
@@ -664,6 +813,8 @@ export const MATRIX_ROWS: {
       hypeman: "Cold microVM; ms restore",
       "claude-code": "Process spawn",
       codex: "Spawn / cloud provision",
+      nono: "Process spawn",
+      incus: "Launch, or ms CoW clone",
     },
   },
   {
@@ -677,6 +828,8 @@ export const MATRIX_ROWS: {
       hypeman: "Guest-sized",
       "claude-code": "Policy only",
       codex: "Policy / ephemeral machine",
+      nono: "Policy only",
+      incus: "A full OS, no hypervisor",
     },
   },
   {
@@ -690,6 +843,8 @@ export const MATRIX_ROWS: {
       hypeman: "Hypervisor + fleet controls",
       "claude-code": "MAC policy on bash",
       codex: "MAC policy; cloud machine",
+      nono: "MAC policy on session + each tool",
+      incus: "User ns + AppArmor; still this kernel",
     },
   },
   {
@@ -703,6 +858,8 @@ export const MATRIX_ROWS: {
       hypeman: "Ingress + optional egress proxy",
       "claude-code": "Allowlist proxy",
       codex: "Off",
+      nono: "L7 proxy, phantom tokens",
+      incus: "Bridged nic",
     },
   },
   {
@@ -716,6 +873,8 @@ export const MATRIX_ROWS: {
       hypeman: "Image it yourself",
       "claude-code": "Is the CLI",
       codex: "Is the CLI",
+      nono: "Wraps the CLI",
+      incus: "Install it in the machine",
     },
   },
   {
@@ -729,6 +888,8 @@ export const MATRIX_ROWS: {
       hypeman: "HTTP API + CLI",
       "claude-code": "sandbox-runtime only",
       codex: "No",
+      nono: "No — wrap, don't embed",
+      incus: "REST API + CLI",
     },
   },
 ];
@@ -738,10 +899,63 @@ export function systemById(id: SystemId) {
 }
 
 export const FAMILY_SYSTEMS: Record<Family, SystemId[]> = {
-  process: ["claude-code", "codex"],
+  process: ["claude-code", "codex", "nono"],
   container: ["yolobox"],
+  system: ["incus"],
   microvm: ["docker-sbx", "microsandbox", "hypeman"],
 };
+
+export const SYSTEM_CONTAINER_CASES: {
+  id: string;
+  title: string;
+  verdict: "need" | "skip";
+  need: string;
+  vsDocker: string;
+  vsMicrovm: string;
+  vsProcess: string;
+  sources?: { label: string; href: string }[];
+}[] = [
+  {
+    id: "villega",
+    title: "Pere Villega · Sandbox for Claude",
+    verdict: "need",
+    need: "The agent must feel like a laptop: apt install, systemd, sudo, a nested Docker daemon, several long-lived boxes. `sandbox my-api --claude` drops Claude Code into its own Incus system container. `sandbox backend frontend --claude` is a tmux of two machines, each with its own dockerd. Golden images are btrfs CoW clones — milliseconds, not a rebuild.",
+    vsDocker: "Docker's unit is a process. You fake a machine with compose, privileged, and a custom image. Incus's unit is already a distro with PID 1 = init.",
+    vsMicrovm: "sbx / libkrun also give you a machine, plus a dedicated kernel. Use them when the threat includes a kernel CVE. Villega is optimizing for density and clone time on a Linux host he already operates, not for hardware isolation.",
+    vsProcess: "nono, Claude's bash sandbox, and Codex never become a machine. They cannot apt, cannot nest Docker, cannot snapshot a full OS.",
+    sources: [
+      { label: "I built yet another sandbox", href: "https://perevillega.com/posts/2026-03-03-ai-sandbox-coding-agents/" },
+      { label: "pvillega/sandbox-claude", href: "https://github.com/pvillega/sandbox-claude" },
+    ],
+  },
+  {
+    id: "nested-docker",
+    title: "Nested Docker, no host socket",
+    verdict: "need",
+    need: "The agent must docker build / compose, and you will not mount /var/run/docker.sock. Incus documents this: security.nesting=true, host-loaded kernel modules, optional /.dockerenv. The dockerd lives in the instance.",
+    vsDocker: "Docker-in-Docker is privileged or a socket mount. Both punch the isolation story yolobox is selling.",
+    vsMicrovm: "Docker sbx is the dedicated-kernel version of this idea. Pick Incus when you already live on LXC and will accept a shared kernel; pick sbx when you will not.",
+    vsProcess: "A process sandbox that can see docker.sock has already lost.",
+  },
+  {
+    id: "tenancy",
+    title: "Dense long-lived Linux tenancy",
+    verdict: "need",
+    need: "Labs, CI runners, student VMs, VPS-shaped boxes. Snapshots, profiles, clustering, idmaps. Many full OSes on one kernel. Firecracker is built for short sandboxes; Incus is built for machines you keep.",
+    vsDocker: "App containers are a poor VPS. You end up reimplementing systemd.",
+    vsMicrovm: "A fleet of hypeman/Firecracker VMs is the stronger wall and the higher bill. Incus --vm is that bill inside Incus.",
+    vsProcess: "Irrelevant. Process sandboxes are not tenancy.",
+  },
+  {
+    id: "not-kernel",
+    title: "When it is the wrong wall",
+    verdict: "skip",
+    need: "Untrusted codegen, a kernel 0-day, Darwin without a Linux VM, or 'just wrap this CLI for an afternoon'. System containers share the host kernel. That is the same family as Docker, with a thicker userspace.",
+    vsDocker: "If all you needed was hide $HOME and sudo, yolobox is less machinery.",
+    vsMicrovm: "This is the job. sbx, microsandbox, hypeman — or Incus --vm if you already operate Incus and accept QEMU.",
+    vsProcess: "nono / Claude / Codex if the unit of isolation is a bash child, not a machine.",
+  },
+];
 
 export type MacHostId = "docker-vm" | "incus-lxc" | "incus-vm" | "apple-container";
 
@@ -794,7 +1008,7 @@ export const MAC_HOSTS: MacHost[] = [
     twoBoxes:
       "Yes, and they are system containers (full /sbin/init), not app containers. Many per VM, near-zero extra virt overhead. This is what the Incus container-environment docs describe: /proc, /sys, LXCFS, /dev/incus/sock, PID 1 = /sbin/init.",
     yoloboxFit:
-      "Incus is not a Docker CLI. yolobox talks docker/podman/container. You would run yolobox against Docker, or run the agent as an Incus instance yourself — different product surface.",
+      "Incus is not a Docker CLI. yolobox talks docker/podman/container. Pere Villega's Sandbox for Claude is the Incus-native wrap: install Claude inside the system container instead of wrapping the CLI from Darwin.",
     kernelStory:
       "Incus is Linux-native (LXC + optional QEMU/KVM). Darwin cannot host it. Colima `colima start --runtime incus` is a Linux VM with Incus installed. The container-environment page is the guest view of that LXC box — it assumes the kernel under it is Linux.",
     layers: [
