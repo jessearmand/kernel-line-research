@@ -39,7 +39,7 @@ export function HarnessPanel() {
           },
           {
             t: "Harness sandboxes",
-            d: "Claude Code and Codex sandbox themselves — the harness stays outside, only the commands go in. Claude's box covers Bash; MCP servers and hooks run on the host unless you use sandbox-runtime. Codex leans on default-on kernel policy, default-off network, and a read-only .git. Wrap either with nono/yolobox/sbx for a thicker outer box.",
+            d: "Claude Code and Codex sandbox themselves — the harness stays outside, only the commands go in. Claude's box covers Bash; MCP servers and hooks run on the host unless you use sandbox-runtime. Codex leans on default-on kernel policy, default-off network with an allowlist proxy once opened, read-only .git / .agents / .codex, and an approval layer (untrusted, on-request, never, or a reviewer agent). Wrap either with nono/yolobox/sbx for a thicker outer box.",
           },
           {
             t: "System containers",
@@ -47,7 +47,7 @@ export function HarnessPanel() {
           },
           {
             t: "Runtimes",
-            d: "microsandbox and hypeman run OCI as a VM. You image Claude into them if you want; their native client is your code, not Anthropic's CLI.",
+            d: "microsandbox and hypeman run OCI as a VM on hardware you own. Cloudflare Sandbox runs it as a Firecracker VM on Cloudflare's, with your Worker as the control plane and the egress proxy. You image Claude Code or OpenCode into any of them; their native client is your code, not Anthropic's CLI.",
           },
         ].map((x) => (
           <article key={x.t} className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">

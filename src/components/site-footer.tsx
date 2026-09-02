@@ -30,8 +30,8 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
-            <a className="hover:text-fg" href="https://developers.openai.com/codex/security/">
-              Codex security / linux-sandbox
+            <a className="hover:text-fg" href="https://learn.chatgpt.com/docs/sandboxing">
+              Codex sandboxing · agent approvals &amp; security · cloud internet access
             </a>
           </li>
           <li>
@@ -69,12 +69,23 @@ export function SiteFooter() {
               gVisor · Modal sandbox security · Vercel Sandbox concepts (Firecracker)
             </a>
           </li>
+          <li>
+            <a className="hover:text-fg" href="https://developers.cloudflare.com/sandbox/concepts/">
+              Cloudflare Sandbox SDK concepts · security model · outbound handlers · Containers lifecycle
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://openai.com/index/running-codex-safely/">
+              OpenAI: Running Codex safely · requirements.toml · auto-review
+            </a>
+          </li>
         </ul>
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-subtle">
           Scores are relative and qualitative. Startup numbers are vendor-reported or typical of
           the primitive, not a benchmark we ran. Cloud Codex and Claude Code on the web are
           different boxes from the local CLIs — the app treats each as two surfaces of one
-          product. The Claude Code on the web observation (Firecracker guest kernel, vsock init,
+          product. Cloudflare's docs say only "its own VM"; the Firecracker attribution comes
+          from the Containers launch coverage, not the Sandbox SDK pages. The Claude Code on the web observation (Firecracker guest kernel, vsock init,
           host-local connections blocked, credential proxy) was taken from inside one such session
           in Sep 2026 and may change.
         </p>

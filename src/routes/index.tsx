@@ -32,9 +32,9 @@ function Home() {
         </Section>
         <Section
           id="systems"
-          eyebrow="03 · Eight systems"
-          title="Wrappers, harnesses, a machine runtime, two VM runtimes."
-          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are general VM runtimes."
+          eyebrow="03 · Nine systems"
+          title="Wrappers, harnesses, a machine runtime, three VM runtimes."
+          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent, a Firecracker guest per sandbox ID behind a Worker."
         >
           <SystemGrid />
         </Section>

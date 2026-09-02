@@ -21,7 +21,7 @@ const POINTS = [
   },
   {
     title: "The proxy is the wall that works on every family",
-    body: "The kernel line is orthogonal to secrets and egress. The pattern that actually keeps a token out of the agent is the same everywhere: a supervisor outside the box holds the real credential and injects it at the network boundary. nono's phantom tokens, sbx header injection, microsandbox's guest-never-sees-it, Claude Code's masked env vars with injectHosts and SigV4 re-signing, Claude Code on the web's separate GitHub-token proxy. A process sandbox with a good proxy beats a microVM with the key baked into the image.",
+    body: "The kernel line is orthogonal to secrets and egress. The pattern that actually keeps a token out of the agent is the same everywhere: a supervisor outside the box holds the real credential and injects it at the network boundary. nono's phantom tokens, sbx header injection, microsandbox's guest-never-sees-it, Claude Code's masked env vars with injectHosts and SigV4 re-signing, Claude Code on the web's separate GitHub-token proxy, Codex's allowlist network_proxy, Cloudflare's outboundByHost handlers running in the Worker. A process sandbox with a good proxy beats a microVM with the key baked into the image.",
   },
   {
     title: "Your host is probably already a VM",
@@ -29,11 +29,11 @@ const POINTS = [
   },
   {
     title: "Off the axis: user-space kernels and no kernel at all",
-    body: "Two primitives do not fit the four rows. gVisor runs a Go kernel in user space that answers the workload's syscalls, so a Linux kernel LPE has no Linux kernel to land on — Modal, Cloud Run and Google's Agent Sandbox default to it, and it can sit on KVM or on a seccomp'd host process. V8 isolates and Wasm runtimes have no syscall surface to begin with; Cloudflare Workers and Deno Deploy live there. Both trade compatibility for a narrower attack surface. If you rent a sandbox — E2B, Vercel Sandbox, Fly (Firecracker), Modal (gVisor) — the buyer question is which of these you got, and who holds the secrets.",
+    body: "Two primitives do not fit the four rows. gVisor runs a Go kernel in user space that answers the workload's syscalls, so a Linux kernel LPE has no Linux kernel to land on — Modal, Cloud Run and Google's Agent Sandbox default to it, and it can sit on KVM or on a seccomp'd host process. V8 isolates and Wasm runtimes have no syscall surface to begin with; Cloudflare Workers and Deno Deploy live there. Both trade compatibility for a narrower attack surface. If you rent a sandbox — Cloudflare Sandbox, E2B, Vercel Sandbox, Fly (all Firecracker), Modal (gVisor) — the buyer question is which of these you got, and who holds the secrets. Cloudflare is the clean case: the Worker calling getSandbox is an isolate, the sandbox it gets is a microVM, and the egress handler between them is where the secret lives.",
   },
   {
     title: "The wall does not judge intent",
-    body: "A prompt injection that makes the agent push a backdoor with the token you gave it never crosses any boundary on this page. Isolation bounds a compromised process; it does not authorise its actions. That job belongs to token scope, per-tool brokering (nono), permission hooks (Claude Code), approvals (Codex), and a human reading the PR before it lands — Codex cloud's clone-then-PR is the strongest shape here precisely because it is not a sandbox feature.",
+    body: "A prompt injection that makes the agent push a backdoor with the token you gave it never crosses any boundary on this page. Isolation bounds a compromised process; it does not authorise its actions. That job belongs to token scope, per-tool brokering (nono), permission hooks (Claude Code), approvals and the auto-review agent (Codex), a per-host egress handler that can refuse a method (Cloudflare), and a human reading the PR before it lands — Codex cloud's clone-then-PR is the strongest shape here precisely because it is not a sandbox feature.",
   },
   {
     title: "Pick the unit of isolation to match the unit of trust",
