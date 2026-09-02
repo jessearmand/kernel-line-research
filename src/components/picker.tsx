@@ -31,7 +31,14 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     return {
       winner: "hypeman",
       also: ["microsandbox"],
-      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs.",
+      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
+    };
+  }
+  if (where === "cloud" && (job === "wrap" || job === "embed")) {
+    return {
+      winner: "cloudflare",
+      also: threat === "tenant" ? ["hypeman", "microsandbox"] : ["hypeman", "docker-sbx"],
+      why: "You want a fleet and you do not want to run a hypervisor. Cloudflare Sandbox is a Firecracker VM per sandbox ID, started from a Worker, with the credential-injecting egress proxy built in — the token stays in the Worker. Rootless Docker-in-Docker is documented for builds. hypeman if you would rather own the control plane, snapshots and GPU; sbx if the 'fleet' is actually one developer's laptop.",
     };
   }
   if (job === "machine") {
@@ -45,7 +52,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     return {
       winner: "microsandbox",
       also: ["hypeman"],
-      why: "An SDK that boots a libkrun microVM as a child process is the shape of 'my agent has a sandbox tool'. hypeman if you outgrow the library and want a server, restore, and GPU.",
+      why: "An SDK that boots a libkrun microVM as a child process is the shape of 'my agent has a sandbox tool'. hypeman if you outgrow the library and want a server, restore, and GPU. A hosted sandbox API — Cloudflare Sandbox, E2B, Vercel Sandbox, Modal — is the same tool with no hypervisor to run; pick it when your product is not on a machine that has /dev/kvm, and pick Cloudflare when the product is already a Worker.",
     };
   }
   if (job === "pair") {
@@ -53,7 +60,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
       return {
         winner: "codex",
         also: ["claude-code", "docker-sbx"],
-        why: "Stay in the harness. Codex is default-on, network-off, kernel-enforced. Claude Code is faster to live with (allowlist proxy, richer hooks) and weaker on egress. nono if you want the same kernel fence around whichever CLI, with a tighter box per tool. Put any of them inside sbx if the threat includes a kernel bug or docker.sock.",
+        why: "Stay in the harness. Codex is default-on, network-off, kernel-enforced, and its approval layer can route escalations to a reviewer agent instead of you. Claude Code is faster to live with (allowlist proxy, richer hooks) and weaker on egress. nono if you want the same kernel fence around whichever CLI, with a tighter box per tool. Put any of them inside sbx if the threat includes a kernel bug or docker.sock.",
       };
     }
     return {

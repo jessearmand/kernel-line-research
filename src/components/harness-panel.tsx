@@ -35,11 +35,11 @@ export function HarnessPanel() {
         {[
           {
             t: "Wrappers",
-            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container. sbx is a microVM with a private engine.",
+            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist. sbx is a microVM with a private engine. In all three the harness and its own API token live inside the box.",
           },
           {
             t: "Harness sandboxes",
-            d: "Claude Code and Codex sandbox themselves. You wrap them with nono/yolobox/sbx only if you want a thicker outer box. Claude leans on hooks + bash. Codex leans on default-on kernel policy and default-off network.",
+            d: "Claude Code and Codex sandbox themselves — the harness stays outside, only the commands go in. Claude's box covers Bash; MCP servers and hooks run on the host unless you use sandbox-runtime. Codex leans on default-on kernel policy, default-off network with an allowlist proxy once opened, read-only .git / .agents / .codex, and an approval layer (untrusted, on-request, never, or a reviewer agent). Wrap either with nono/yolobox/sbx for a thicker outer box.",
           },
           {
             t: "System containers",
@@ -47,7 +47,7 @@ export function HarnessPanel() {
           },
           {
             t: "Runtimes",
-            d: "microsandbox and hypeman run OCI as a VM. You image Claude into them if you want; their native client is your code, not Anthropic's CLI.",
+            d: "microsandbox and hypeman run OCI as a VM on hardware you own. Cloudflare Sandbox runs it as a Firecracker VM on Cloudflare's, with your Worker as the control plane and the egress proxy. You image Claude Code or OpenCode into any of them; their native client is your code, not Anthropic's CLI.",
           },
         ].map((x) => (
           <article key={x.t} className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">
