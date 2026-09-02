@@ -54,11 +54,29 @@ export function SiteFooter() {
               apple/container · yolobox Apple runtime limits
             </a>
           </li>
+          <li>
+            <a className="hover:text-fg" href="https://code.claude.com/docs/en/sandbox-environments">
+              Claude Code: choose a sandbox environment · dev container · on the web
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://docs.docker.com/ai/sandboxes/security/">
+              Docker Sandboxes security model · --clone · MCP gateway
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://gvisor.dev/">
+              gVisor · Modal sandbox security · Vercel Sandbox concepts (Firecracker)
+            </a>
+          </li>
         </ul>
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-subtle">
           Scores are relative and qualitative. Startup numbers are vendor-reported or typical of
-          the primitive, not a benchmark we ran. Cloud Codex isolation is a different box from
-          the local CLI — the app treats them as two surfaces of one product.
+          the primitive, not a benchmark we ran. Cloud Codex and Claude Code on the web are
+          different boxes from the local CLIs — the app treats each as two surfaces of one
+          product. The Claude Code on the web observation (Firecracker guest kernel, vsock init,
+          host-local connections blocked, credential proxy) was taken from inside one such session
+          in Sep 2026 and may change.
         </p>
       </div>
     </footer>

@@ -35,11 +35,11 @@ export function HarnessPanel() {
         {[
           {
             t: "Wrappers",
-            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container. sbx is a microVM with a private engine.",
+            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist. sbx is a microVM with a private engine. In all three the harness and its own API token live inside the box.",
           },
           {
             t: "Harness sandboxes",
-            d: "Claude Code and Codex sandbox themselves. You wrap them with nono/yolobox/sbx only if you want a thicker outer box. Claude leans on hooks + bash. Codex leans on default-on kernel policy and default-off network.",
+            d: "Claude Code and Codex sandbox themselves — the harness stays outside, only the commands go in. Claude's box covers Bash; MCP servers and hooks run on the host unless you use sandbox-runtime. Codex leans on default-on kernel policy, default-off network, and a read-only .git. Wrap either with nono/yolobox/sbx for a thicker outer box.",
           },
           {
             t: "System containers",

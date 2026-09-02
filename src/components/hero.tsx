@@ -55,7 +55,10 @@ export function Spectrum() {
           Process sandboxes, app containers, and system containers all ask the host
           kernel to please isolate a workload. A microVM boots a second kernel so that
           question never reaches the host. System containers are the missing row:
-          a full Linux machine, still that kernel.
+          a full Linux machine, still that kernel. Two primitives sit off this axis
+          — gVisor's user-space kernel and V8/Wasm runtimes with no kernel at all —
+          and the hosted sandboxes you can rent (E2B, Vercel Sandbox, Modal) are one
+          of these four or those two, run on someone else's fleet.
         </p>
         <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {FAMILIES.map((fam, i) => (

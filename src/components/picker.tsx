@@ -31,7 +31,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     return {
       winner: "hypeman",
       also: ["microsandbox"],
-      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs.",
+      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
     };
   }
   if (job === "machine") {
@@ -45,7 +45,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     return {
       winner: "microsandbox",
       also: ["hypeman"],
-      why: "An SDK that boots a libkrun microVM as a child process is the shape of 'my agent has a sandbox tool'. hypeman if you outgrow the library and want a server, restore, and GPU.",
+      why: "An SDK that boots a libkrun microVM as a child process is the shape of 'my agent has a sandbox tool'. hypeman if you outgrow the library and want a server, restore, and GPU. A hosted sandbox API (E2B, Vercel Sandbox, Modal) is the same tool with no hypervisor to run — pick it when your product is not on a machine that has /dev/kvm.",
     };
   }
   if (job === "pair") {

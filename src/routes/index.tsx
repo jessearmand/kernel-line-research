@@ -58,7 +58,7 @@ function Home() {
           id="threats"
           eyebrow="06 · Threats"
           title="Isolation is a claim until you name the failure."
-          lede="A sandbox that survives rm -rf ~ can still lose a kernel CVE, a docker socket, or the repo you mounted. Pick a failure and read the blast radius."
+          lede="A sandbox that survives rm -rf ~ can still lose a kernel CVE, a docker socket, the repo you mounted, the host's localhost, the next session via a planted git hook, or an authorised push with a real token. Pick a failure and read the blast radius."
         >
           <ThreatLab />
         </Section>
