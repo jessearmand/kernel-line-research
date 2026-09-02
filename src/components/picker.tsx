@@ -34,7 +34,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
       why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
     };
   }
-  if (where === "cloud" && job !== "pair") {
+  if (where === "cloud" && (job === "wrap" || job === "embed")) {
     return {
       winner: "cloudflare",
       also: threat === "tenant" ? ["hypeman", "microsandbox"] : ["hypeman", "docker-sbx"],
