@@ -3,7 +3,7 @@ import { SYSTEMS, type SystemId } from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Job = "wrap" | "embed" | "browser" | "pair" | "machine";
+type Job = "wrap" | "embed" | "browser" | "pair" | "machine" | "mac" | "windows";
 type Threat = "accident" | "hostile" | "tenant";
 type DockerNeed = "yes" | "no";
 type Where = "laptop" | "cloud" | "embed";
@@ -14,6 +14,8 @@ const JOBS: { id: Job; label: string; hint: string }[] = [
   { id: "embed", label: "Execute untrusted code", hint: "Your product runs model-written programs" },
   { id: "browser", label: "Browser agents at scale", hint: "Cloud Chromium, snapshots, tenants" },
   { id: "pair", label: "Interactive pair-programming", hint: "Stay in the repo, don't wrap anything" },
+  { id: "mac", label: "Agent needs macOS", hint: "Xcode, codesign, Simulator, Safari" },
+  { id: "windows", label: "Agent needs Windows", hint: "MSVC, kernel debugging, a Windows desktop" },
 ];
 
 const THREATS: { id: Threat; label: string; hint: string }[] = [
@@ -27,6 +29,46 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
   also: SystemId[];
   why: string;
 } {
+  if (job === "mac") {
+    const dockerNote =
+      docker === "yes"
+        ? " A macOS guest cannot host a VM on any chip, so Docker cannot run inside the workspace — run a Linux VM as a sibling on the host and reach it over the network."
+        : "";
+    const fleetNote =
+      where === "cloud"
+        ? " There is no fleet answer here: Apple caps concurrent macOS guests at two per host, so this stays a workstation."
+        : "";
+    if (threat === "accident") {
+      return {
+        winner: "ghostvm",
+        also: ["utm", "agent-sandbox-vm"],
+        why:
+          "No Linux box runs Xcode. GhostVM gives each agent a whole macOS on Virtualization.framework, with clipboard, ports and file transfer each behind a prompt. UTM is the free general-purpose route to the same guest with fewer conveniences." +
+          dockerNote +
+          fleetNote,
+      };
+    }
+    return {
+      winner: "agent-sandbox-vm",
+      also: ["ghostvm", "utm"],
+      why:
+        "Hostile code on a Mac wants the clean-room shape: glslang's vmctl boots a macOS guest on Virtualization.framework with the network isolated by default, restores the base snapshot before each session, and copies artifacts out. GhostVM is the nicer workspace once you accept NAT egress and gated host channels; UTM is the free manual route." +
+        dockerNote +
+        fleetNote,
+    };
+  }
+  if (job === "windows") {
+    return {
+      winner: "agent-sandbox-vm",
+      also: ["utm"],
+      why:
+        "MSVC, KDNET and test-signed drivers need a Windows guest, and GhostVM only boots macOS. agent-sandbox-vm is built for this: a Hyper-V Gen 2 VM on a Windows host driven over PowerShell Direct, or Windows 11 ARM64 under Parallels on a Mac — isolated switch by default, checkpoint restore per session, artifacts copied out. UTM gives you a manual Windows guest (ARM64 virtualized, x86 emulated slowly) with no agent plumbing." +
+        (docker === "yes"
+          ? " Docker Desktop inside a Windows guest needs nested virt: Hyper-V exposes it, Parallels can, Virtualization.framework does not."
+          : "") +
+        (where === "cloud" ? " This is a workstation answer; a Windows fleet is Hyper-V or a cloud you rent, not this page." : ""),
+    };
+  }
   if (job === "browser" || (threat === "tenant" && where !== "laptop")) {
     return {
       winner: "hypeman",
@@ -174,7 +216,7 @@ export function Picker() {
         <h3 className="mt-2 text-2xl font-medium tracking-tight">{winner.name}</h3>
         <p className="mt-1 text-sm text-muted">{winner.short}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Badge tone={winner.family === "microvm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
+          <Badge tone={winner.family === "microvm" || winner.family === "vm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
             {winner.family}
           </Badge>
           <Badge>{winner.kernel} kernel</Badge>

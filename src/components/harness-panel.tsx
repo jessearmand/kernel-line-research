@@ -31,7 +31,7 @@ export function HarnessPanel() {
           </tbody>
         </table>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {[
           {
             t: "Wrappers",
@@ -48,6 +48,10 @@ export function HarnessPanel() {
           {
             t: "Runtimes",
             d: "microsandbox and hypeman run OCI as a VM on hardware you own. Cloudflare Sandbox runs it as a Firecracker VM on Cloudflare's, with your Worker as the control plane and the egress proxy. You image Claude Code or OpenCode into any of them; their native client is your code, not Anthropic's CLI.",
+          },
+          {
+            t: "Full VMs",
+            d: "GhostVM, UTM and agent-sandbox-vm boot a whole macOS or Windows guest and you install the agent inside like on any Mac or PC. Nothing here wraps a CLI; the host-side handles are vmctl remote exec, utmctl, PowerShell Direct or prlctl exec. The harness and its login live in the guest, which is why the products push one workspace per client.",
           },
         ].map((x) => (
           <article key={x.t} className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">
