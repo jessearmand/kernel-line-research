@@ -21,7 +21,7 @@ export function StackExplorer() {
   const systems = FAMILY_SYSTEMS[family].map((id) => SYSTEMS.find((s) => s.id === id)!);
 
   const stopAt = useMemo(() => {
-    if (family === "microvm") return "guest-kernel";
+    if (family === "microvm" || family === "vm") return "guest-kernel";
     return "host-kernel";
   }, [family]);
 
@@ -73,8 +73,8 @@ export function StackExplorer() {
                   >
                     <span className={cn("text-sm font-medium", KIND_TONE[l.kind])}>{l.label}</span>
                     {isStop ? (
-                      <Badge tone={family === "microvm" ? "micro" : "warn"}>
-                        {family === "microvm" ? "the wall" : "shared"}
+                      <Badge tone={family === "microvm" || family === "vm" ? "micro" : "warn"}>
+                        {family === "microvm" || family === "vm" ? "the wall" : "shared"}
                       </Badge>
                     ) : null}
                     {trace === "run" ? (
@@ -108,7 +108,9 @@ export function StackExplorer() {
             <p className="mt-4 text-sm leading-relaxed text-fg">
               {family === "microvm"
                 ? "A kernel CVE inside the agent dies in the guest unless the VMM is also wrong. That is the MicroVM impact: you moved the trusted computing base from 'every syscall on this laptop' to 'this VMM plus the hypervisor'."
-                : family === "system"
+                : family === "vm"
+                  ? "Same wall as a microVM, different guest: a whole macOS or Windows. A kernel CVE dies in the guest XNU or NT. What this row adds is the OS the agent's job needs — Xcode, codesign, MSVC — and what it costs is a desktop-class VM, Apple's two-guest cap, and every host-guest convenience you enable being a hole you chose."
+                  : family === "system"
                   ? "Unprivileged LXC maps container root to a high host uid, and AppArmor is on. That is a better accident story than stock Docker. The kernel is still this one. Pere Villega's Sandbox for Claude lives here: a machine, not a wall."
                   : "There is no second kernel. Namespaces, Seatbelt, and Landlock are all asking the same kernel that the attacker is already talking to. Isolation here is a policy, and policies have holes."}
             </p>

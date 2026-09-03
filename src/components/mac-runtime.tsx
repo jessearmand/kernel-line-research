@@ -107,7 +107,7 @@ export function MacRuntime() {
                   )}
                 >
                   <span className={cn("text-sm font-medium", KIND_TONE[l.kind])}>{l.label}</span>
-                  {(l.id === "kvm" || (l.id === "hvf" && host.id === "apple-container")) ? (
+                  {(l.id === "kvm" || (l.id === "hvf" && (host.id === "apple-container" || host.id === "macos-guest"))) ? (
                     <Badge tone={host.nestedVirt === "yes" ? "warn" : "micro"}>
                       {host.nestedVirt === "yes" ? "nested" : "siblings"}
                     </Badge>
@@ -126,9 +126,11 @@ export function MacRuntime() {
             <Badge>
               {host.id === "apple-container"
                 ? "VM per container"
-                : host.id === "incus-vm"
-                  ? "VM in a VM"
-                  : "shared Linux VM"}
+                : host.id === "macos-guest"
+                  ? "macOS in macOS"
+                  : host.id === "incus-vm"
+                    ? "VM in a VM"
+                    : "shared Linux VM"}
             </Badge>
           </div>
           <h3 className="mt-4 text-xl font-medium tracking-tight">{layer.label}</h3>

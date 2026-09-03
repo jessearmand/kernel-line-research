@@ -25,16 +25,16 @@ function Home() {
         <Section
           id="stack"
           eyebrow="02 · Stack"
-          title="The same attack, four different walls."
-          lede="Click a layer. Then trace a kernel CVE upward from the agent. On a process sandbox, an app container, or a system container the pulse reaches the host kernel. On a microVM it stops at the guest."
+          title="The same attack, five different walls."
+          lede="Click a layer. Then trace a kernel CVE upward from the agent. On a process sandbox, an app container, or a system container the pulse reaches the host kernel. On a microVM or a full VM it stops at the guest — and on a full VM the guest is not even Linux."
         >
           <StackExplorer />
         </Section>
         <Section
           id="systems"
-          eyebrow="03 · Nine systems"
-          title="Wrappers, harnesses, a machine runtime, three VM runtimes."
-          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent, a Firecracker guest per sandbox ID behind a Worker."
+          eyebrow="03 · Twelve systems"
+          title="Wrappers, harnesses, a machine runtime, three microVM runtimes, three full VMs."
+          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent. GhostVM, UTM and agent-sandbox-vm boot a macOS or Windows guest, for the jobs no Linux box can do."
         >
           <SystemGrid />
         </Section>
@@ -74,7 +74,7 @@ function Home() {
           id="mac"
           eyebrow="08 · Mac"
           title="Darwin is not a Linux kernel. Nested virt is the bill for pretending twice."
-          lede="Incus containers need Linux, so a Mac first boots a Linux VM — no nested virt. Incus --vm needs KVM inside that VM, so nested virt, M3+, macOS 15+. Two Apple Containers are two machines on Darwin, not two machines inside a machine — HVF does not live in the Linux guest."
+          lede="Incus containers need Linux, so a Mac first boots a Linux VM — no nested virt. Incus --vm needs KVM inside that VM, so nested virt, M3+, macOS 15+. Two Apple Containers are two machines on Darwin, not two machines inside a machine — HVF does not live in the Linux guest. A macOS guest (GhostVM, UTM) is the one box that is not Linux at all: two per host, none nested."
         >
           <MacRuntime />
         </Section>

@@ -3,7 +3,7 @@ import { SYSTEMS, type SystemId } from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Job = "wrap" | "embed" | "browser" | "pair" | "machine";
+type Job = "wrap" | "embed" | "browser" | "pair" | "machine" | "mac";
 type Threat = "accident" | "hostile" | "tenant";
 type DockerNeed = "yes" | "no";
 type Where = "laptop" | "cloud" | "embed";
@@ -14,6 +14,7 @@ const JOBS: { id: Job; label: string; hint: string }[] = [
   { id: "embed", label: "Execute untrusted code", hint: "Your product runs model-written programs" },
   { id: "browser", label: "Browser agents at scale", hint: "Cloud Chromium, snapshots, tenants" },
   { id: "pair", label: "Interactive pair-programming", hint: "Stay in the repo, don't wrap anything" },
+  { id: "mac", label: "Agent needs macOS or Windows", hint: "Xcode, codesign, MSVC, a real desktop" },
 ];
 
 const THREATS: { id: Threat; label: string; hint: string }[] = [
@@ -27,6 +28,13 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
   also: SystemId[];
   why: string;
 } {
+  if (job === "mac") {
+    return {
+      winner: "ghostvm",
+      also: threat === "accident" ? ["utm", "agent-sandbox-vm"] : ["agent-sandbox-vm", "utm"],
+      why: "No Linux box runs Xcode. GhostVM gives each agent a whole macOS on Virtualization.framework, with clipboard, ports and file transfer each behind a prompt. UTM is the free general-purpose route to the same guest — and the route to a Windows or x86 guest. agent-sandbox-vm is the scripted clean room for MSVC builds: isolated switch by default, checkpoint restore per session, artifacts copied out. Apple caps you at two macOS guests, so this is a workstation answer, not a fleet.",
+    };
+  }
   if (job === "browser" || (threat === "tenant" && where !== "laptop")) {
     return {
       winner: "hypeman",
@@ -174,7 +182,7 @@ export function Picker() {
         <h3 className="mt-2 text-2xl font-medium tracking-tight">{winner.name}</h3>
         <p className="mt-1 text-sm text-muted">{winner.short}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Badge tone={winner.family === "microvm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
+          <Badge tone={winner.family === "microvm" || winner.family === "vm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
             {winner.family}
           </Badge>
           <Badge>{winner.kernel} kernel</Badge>

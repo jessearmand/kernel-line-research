@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 
 function familyTone(family: System["family"]) {
-  if (family === "microvm") return "micro" as const;
+  if (family === "microvm" || family === "vm") return "micro" as const;
   if (family === "container") return "warn" as const;
   if (family === "system") return "ok" as const;
   return "shared" as const;

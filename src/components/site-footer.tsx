@@ -79,6 +79,26 @@ export function SiteFooter() {
               OpenAI: Running Codex safely · requirements.toml · auto-review
             </a>
           </li>
+          <li>
+            <a className="hover:text-fg" href="https://ghostvm.org/">
+              GhostVM · vsock services · snapshots · github.com/groundwater/GhostVM
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://github.com/glslang/agent-sandbox-vm">
+              glslang/agent-sandbox-vm · Hyper-V · Virtualization.framework · Parallels
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://mac.getutm.app/">
+              UTM · macOS guest support · utmctl
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://eclecticlight.co/2022/08/04/virtualisation-on-apple-silicon-macs-8-how-apple-limits-vms/">
+              Eclectic Light: how Apple limits macOS VMs (two guests, no nesting)
+            </a>
+          </li>
         </ul>
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-subtle">
           Scores are relative and qualitative. Startup numbers are vendor-reported or typical of
