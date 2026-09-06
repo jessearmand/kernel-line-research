@@ -51,7 +51,7 @@ export function HarnessPanel() {
           },
           {
             t: "Full VMs",
-            d: "GhostVM, UTM and agent-sandbox-vm boot a whole macOS or Windows guest and you install the agent inside like on any Mac or PC. Nothing here wraps a CLI; the host-side handles are vmctl remote exec, utmctl, PowerShell Direct or prlctl exec. The harness and its login live in the guest, which is why the products push one workspace per client.",
+            d: "GhostVM, UTM, Lume and agent-sandbox-vm boot a whole macOS or Windows guest and you install the agent inside like on any Mac or PC. Nothing here wraps a CLI; the host-side handles are vmctl remote exec, utmctl, lume ssh, PowerShell Direct or prlctl exec. Cua Sandbox is the exception in kind: its native client is a computer-use agent that clicks and types, with a shell and a Python venv on the same machine. The harness and its login live in the guest, which is why the products push one workspace per client.",
           },
         ].map((x) => (
           <article key={x.t} className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">

@@ -32,9 +32,9 @@ function Home() {
         </Section>
         <Section
           id="systems"
-          eyebrow="03 · Twelve systems"
-          title="Wrappers, harnesses, a machine runtime, three microVM runtimes, three full VMs."
-          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent. GhostVM, UTM and agent-sandbox-vm boot a macOS or Windows guest, for the jobs no Linux box can do."
+          eyebrow="03 · Fourteen systems"
+          title="Wrappers, harnesses, a machine runtime, three microVM runtimes, five full VMs."
+          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent. GhostVM, UTM, Lume and agent-sandbox-vm boot a macOS or Windows guest, for the jobs no Linux box can do. Cua Sandbox is the computer-use version: one machine the agent both codes in and clicks through, from a Docker container up to a Lume macOS guest."
         >
           <SystemGrid />
         </Section>
@@ -74,7 +74,7 @@ function Home() {
           id="mac"
           eyebrow="08 · Mac"
           title="Darwin is not a Linux kernel. Nested virt is the bill for pretending twice."
-          lede="Incus containers need Linux, so a Mac first boots a Linux VM — no nested virt. Incus --vm needs KVM inside that VM, so nested virt, M3+, macOS 15+. Two Apple Containers are two machines on Darwin, not two machines inside a machine — HVF does not live in the Linux guest. A macOS guest (GhostVM, UTM) is the one box that is not Linux at all: two per host, none nested."
+          lede="Incus containers need Linux, so a Mac first boots a Linux VM — no nested virt. Incus --vm needs KVM inside that VM, so nested virt, M3+, macOS 15+. Two Apple Containers are two machines on Darwin, not two machines inside a machine — HVF does not live in the Linux guest. A macOS guest (GhostVM, UTM, Lume) is the one box that is not Linux at all: two per host, none nested."
         >
           <MacRuntime />
         </Section>

@@ -99,6 +99,16 @@ export function SiteFooter() {
               Eclectic Light: how Apple limits macOS VMs (two guests, no nesting)
             </a>
           </li>
+          <li>
+            <a className="hover:text-fg" href="https://cua.ai/docs/concepts/how-sandboxes-work">
+              Cua: how sandboxes work · runtime support 0.4.3 · sandbox images
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://cua.ai/docs/concepts/how-lume-unattended-setup-works">
+              Lume: unattended macOS setup · SIP via Recovery · CLI reference · limits
+            </a>
+          </li>
         </ul>
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-subtle">
           Scores are relative and qualitative. Startup numbers are vendor-reported or typical of
