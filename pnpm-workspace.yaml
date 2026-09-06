@@ -1,3 +1,6 @@
+packages:
+  - "."
+
 # Keep the global 7-day minimumReleaseAge. Exempt only the wrangler 4.129.0
 # stack and the two transitive versions that failed lockfile verification.
 minimumReleaseAgeExclude:
