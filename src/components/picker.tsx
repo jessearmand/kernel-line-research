@@ -41,18 +41,18 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     if (threat === "accident") {
       return {
         winner: "ghostvm",
-        also: ["utm", "agent-sandbox-vm"],
+        also: ["lume", "utm", "agent-sandbox-vm"],
         why:
-          "No Linux box runs Xcode. GhostVM gives each agent a whole macOS on Virtualization.framework, with clipboard, ports and file transfer each behind a prompt. UTM is the free general-purpose route to the same guest with fewer conveniences." +
+          "No Linux box runs Xcode. GhostVM gives each agent a whole macOS on Virtualization.framework, with clipboard, ports and file transfer each behind a prompt. Lume is the headless, scriptable one — IPSW in, SSH out, OCI images, a REST API — and what Cua's computer-use sandboxes sit on. UTM is the free general-purpose route to the same guest with fewer conveniences." +
           dockerNote +
           fleetNote,
       };
     }
     return {
       winner: "agent-sandbox-vm",
-      also: ["ghostvm", "utm"],
+      also: ["ghostvm", "lume", "utm"],
       why:
-        "Hostile code on a Mac wants the clean-room shape: glslang's vmctl boots a macOS guest on Virtualization.framework with the network isolated by default, restores the base snapshot before each session, and copies artifacts out. GhostVM is the nicer workspace once you accept NAT egress and gated host channels; UTM is the free manual route." +
+        "Hostile code on a Mac wants the clean-room shape: glslang's vmctl boots a macOS guest on Virtualization.framework with the network isolated by default, restores the base snapshot before each session, and copies artifacts out. GhostVM is the nicer workspace once you accept NAT egress and gated host channels; Lume gives the same clone-a-seed-per-job shape headless over SSH, with the network still open; UTM is the free manual route." +
         dockerNote +
         fleetNote,
     };
@@ -72,8 +72,8 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
   if (job === "browser" || (threat === "tenant" && where !== "laptop")) {
     return {
       winner: "hypeman",
-      also: ["microsandbox"],
-      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
+      also: job === "browser" ? ["cua-sandbox", "microsandbox"] : ["microsandbox"],
+      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If the agent must drive a whole desktop rather than a Chromium, Cua Sandbox is the computer-use shape: shell, PTY and GUI actions on one machine, from a Docker container up to a Lume macOS guest, locally or from a Fleet pool. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
     };
   }
   if (where === "cloud" && (job === "wrap" || job === "embed")) {
@@ -219,7 +219,7 @@ export function Picker() {
           <Badge tone={winner.family === "microvm" || winner.family === "vm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
             {winner.family}
           </Badge>
-          <Badge>{winner.kernel} kernel</Badge>
+          <Badge>{winner.kernel === "mixed" ? "kernel per image" : `${winner.kernel} kernel`}</Badge>
         </div>
         <p className="mt-5 text-sm leading-relaxed text-fg">{result.why}</p>
         {result.also.length ? (
