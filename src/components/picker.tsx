@@ -219,7 +219,7 @@ export function Picker() {
           <Badge tone={winner.family === "microvm" || winner.family === "vm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
             {winner.family}
           </Badge>
-          <Badge>{winner.kernel} kernel</Badge>
+          <Badge>{winner.kernel === "mixed" ? "kernel per image" : `${winner.kernel} kernel`}</Badge>
         </div>
         <p className="mt-5 text-sm leading-relaxed text-fg">{result.why}</p>
         {result.also.length ? (

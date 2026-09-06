@@ -28,7 +28,7 @@ export type System = {
   oneLiner: string;
   role: "wrapper" | "runtime" | "harness";
   vmm: string;
-  kernel: "shared" | "dedicated";
+  kernel: "shared" | "dedicated" | "mixed";
   openSource: string;
   platforms: string;
   startup: string;
@@ -576,7 +576,7 @@ export const SYSTEMS: System[] = [
     oneLiner: "A desktop per agent — Linux, macOS, Windows or Android — where a shell command and a mouse click land on the same files.",
     role: "runtime",
     vmm: "Per Image: none (Docker container), QEMU with /dev/kvm when present, Lume on Virtualization.framework, Hyper-V. Fleet boots KubeVirt-style containerDisks on Cua's capacity.",
-    kernel: "dedicated",
+    kernel: "mixed",
     openSource: "SDK, cua-server and Lume are open source (trycua/cua). Fleet and Cloud macOS are Cua's services.",
     platforms: "Local: any host with Docker, qemu-system-x86_64, or an Apple silicon Mac with Lume. Fleet: managed pools, us-east-1 only in 0.4.3.",
     startup: "Seconds for the container kind; a full OS boot for every VM kind; a Fleet claim reserves an already-booted machine from a pool.",
@@ -1028,7 +1028,7 @@ export const THREATS: Threat[] = [
       ghostvm: { verdict: "partial", note: "The guest disk persists until you revert, so the plant stays in the workspace — which is the workspace's point. It reaches your host only through a shared folder or a quarantined file transfer." },
       "agent-sandbox-vm": { verdict: "contained", note: "Restore the clean base before each session and the plant is gone; artifacts you copy out are files you chose. Skip --restore and it persists in the guest." },
       utm: { verdict: "partial", note: "Whatever the agent did stays in the guest disk. Save states (macOS 14+) and QEMU snapshots are your revert." },
-      "cua-sandbox": { verdict: "contained", note: "Ephemeral sandboxes are destroyed at the end and the next one comes from the immutable Image. Named sandboxes persist by design — treat one as a machine you keep." },
+      "cua-sandbox": { verdict: "partial", note: "Ephemeral: destroyed at the end, and the next one comes from the immutable Image, so the plant dies. Named: it persists by design and the next process reconnects to it, plant included — and with Sandbox.snapshot() unimplemented there is no revert short of delete and recreate." },
       lume: { verdict: "partial", note: "The guest disk persists until you delete it. Clone a seed per job and the plant dies with the job; reuse a VM and it stays." },
       "claude-code": { verdict: "partial", note: "Denies writes to .claude/*, .mcp.json, .git/hooks and .git/config, shell rc, .vscode/.idea — no allowWrite can lift it. .envrc, Makefile, package.json, CI config are still writable, and disabling filesystem isolation drops the whole list." },
       codex: { verdict: "partial", note: ".git, .agents and .codex are read-only in workspace-write, so hooks and agent config are covered. Anything else in the tree is fair game. Cloud: the plant arrives as a PR you review." },
