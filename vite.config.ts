@@ -142,6 +142,16 @@ function authPopupPlugin(): Plugin {
   };
 }
 
+/**
+ * Nitro deploy target. Vercel is the App Builder default. Cloudflare Workers
+ * Builds sets `WORKERS_CI=1`; the `cloudflare-module` preset then emits
+ * `.output/server/wrangler.json` plus the `.wrangler/deploy/config.json`
+ * redirect, so `npx wrangler deploy` finds the bundle without autoconfig
+ * rewriting this file in CI. `NITRO_PRESET` still overrides both.
+ */
+const nitroPreset =
+  process.env.NITRO_PRESET ?? (process.env.WORKERS_CI ? "cloudflare-module" : "vercel");
+
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
@@ -170,7 +180,7 @@ export default defineConfig(({ command, isPreview }) => ({
     ...(command === "build" || isPreview
       ? [
           nitro({
-            preset: "vercel",
+            preset: nitroPreset,
             // Auto-registers server/middleware/* (the PWA install page +
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.

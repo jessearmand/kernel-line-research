@@ -7,6 +7,7 @@ dist
 .output
 .vercel
 .nitro
+.wrangler
 .tanstack
 .grok
 screenshots
