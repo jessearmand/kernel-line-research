@@ -1056,7 +1056,7 @@ export const THREATS: Threat[] = [
         verdict: "contained",
         note: "Many system containers per host is the design. Pere Villega's `sandbox backend frontend --claude` is two Incus boxes in tmux, each with its own Docker. On a Mac they still share the one Colima/OrbStack Linux VM.",
       },
-      "code-on-incus": { verdict: "contained", note: "Slots are the design: coi shell twice gives myproject and myproject-2 — same workspace, separate homes, packages, processes and conversations. On a Mac both live in the one Colima/OrbStack VM." },
+      "code-on-incus": { verdict: "contained", note: "Slots are the design: coi shell twice gives myproject and myproject-2 — same workspace, separate homes, packages and processes. Conversation history is separate for Claude Code and Codex, whose sessions live in the home; opencode keeps its SQLite store in the workspace's .opencode/, so two slots share it. On a Mac both live in the one Colima/OrbStack VM." },
     },
   },
   {
@@ -1125,7 +1125,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Approvals gate the command locally, and auto_review can hand the escalation to a reviewer agent that denies critical-risk actions and fails closed. Cloud comes back as a PR: the strongest shape, because a human sees the diff before it lands." },
       nono: { verdict: "partial", note: "The best of the wrappers: gh gets the token only inside its own child sandbox, and the L7 policy can allow read-PR while denying push. The policy is still yours to write." },
       incus: { verdict: "exposed", note: "Whatever you put in the machine is the machine's. Incus has no credential proxy." },
-      "code-on-incus": { verdict: "partial", note: "A held token is usable — coi has no request proxy. What it adds is the monitor: reverse shells and metadata hits kill the box, bulk reads pause it. Intent is not judged." },
+      "code-on-incus": { verdict: "exposed", note: "A held token is usable — coi has no request proxy and no approval gate, so a git push or a cloud API delete under a token you handed over is just a request. The monitor reacts to reverse shells, metadata hits and bulk I/O, none of which this is. Same as plain Incus." },
     },
   },
 ];
