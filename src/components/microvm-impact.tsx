@@ -41,11 +41,11 @@ const POINTS = [
   },
   {
     title: "Two products share the word sandbox",
-    body: "Subtraction: nono, Claude Code's Seatbelt profile, Codex's bwrap+seccomp, sandbox-runtime, fence, landrun — and the app containers, yolobox and Litterbox, which are a namespace fence around a process on your kernel with your files bind-mounted in. A fence around your machine, everything else on it left as you had it. Addition: sbx, microsandbox, hypeman, Cloudflare, GhostVM, Lume, Incus — a machine you hand over, nothing of yours inside it unless you mounted it. The first cannot survive a kernel bug and does not need a kernel. The second cannot see your Metal GPU, your keychain, or your dockerd, and the whole product is deciding which of those to pass back through. Most of the rough edges on this site — live mounts, docker.sock, the Mac GPU, two-guest caps — are one side borrowing the other's promise.",
+    body: "Subtraction: nono, Claude Code's Seatbelt profile, Codex's bwrap+seccomp, sandbox-runtime, fence, landrun — and the app containers, yolobox and Litterbox, which are a namespace fence around a process on your kernel with your files bind-mounted in. A fence around your machine, everything else on it left as you had it. Addition: sbx, microsandbox, hypeman, Cloudflare, GhostVM, Lume, Incus, code-on-incus — a machine you hand over, nothing of yours inside it unless you mounted it. The first cannot survive a kernel bug and does not need a kernel. The second cannot see your Metal GPU, your keychain, or your dockerd, and the whole product is deciding which of those to pass back through. Most of the rough edges on this site — live mounts, docker.sock, the Mac GPU, two-guest caps — are one side borrowing the other's promise.",
   },
   {
     title: "Pick the unit of isolation to match the unit of trust",
-    body: "A bash child is the unit for pair-programming (Claude, Codex, nono). An app container is the unit for a YOLO CLI that is still a process (yolobox). A system container is the unit for a laptop-shaped agent that must apt and nest Docker (Incus, Pere Villega). A microVM is the unit for untrusted code, nested build with a kernel wall, or a tenant. A snapshotted VM fleet is the unit for browser agents.",
+    body: "A bash child is the unit for pair-programming (Claude, Codex, nono). An app container is the unit for a YOLO CLI that is still a process (yolobox). A system container is the unit for a laptop-shaped agent that must apt and nest Docker (Incus, Pere Villega, code-on-incus). A microVM is the unit for untrusted code, nested build with a kernel wall, or a tenant. A snapshotted VM fleet is the unit for browser agents.",
   },
 ];
 

@@ -60,6 +60,11 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
+            <a className="hover:text-fg" href="https://github.com/mensfeld/code-on-incus">
+              mensfeld/code-on-incus · wiki (network isolation, security monitoring) · mensfeld.pl
+            </a>
+          </li>
+          <li>
             <a className="hover:text-fg" href="https://linuxcontainers.org/incus/docs/main/container-environment/">
               Incus container environment · Colima Incus runtime
             </a>

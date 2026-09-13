@@ -22,15 +22,15 @@ export function Hero() {
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
           yolobox, Docker sbx, microsandbox, hypeman, Cloudflare Sandbox, GhostVM, UTM,
-          agent-sandbox-vm, Cua Sandbox, Lume, Claude Code, Codex, nono, and Incus sit on
-          five isolation primitives. Process, app container, system container, microVM, full VM — one
+          agent-sandbox-vm, Cua Sandbox, Lume, Claude Code, Codex, nono, Incus, and
+          code-on-incus sit on five isolation primitives. Process, app container, system container, microVM, full VM — one
           question: whose kernel is it, and whose OS?
         </p>
         <dl className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border md:grid-cols-4">
           {[
             { k: "Shared kernel", v: "Process · app · system" },
             { k: "Dedicated kernel", v: "MicroVM · Full VM" },
-            { k: "Wrappers", v: "nono · yolobox · sbx" },
+            { k: "Wrappers", v: "nono · yolobox · sbx · coi" },
             { k: "Machines", v: "Incus · msb · hypeman · CF · GhostVM" },
           ].map((item) => (
             <div key={item.k} className="bg-bg-elevated px-4 py-4 md:px-5 md:py-5">
@@ -50,7 +50,7 @@ export function Spectrum() {
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <p className="font-mono text-xs tracking-[0.18em] text-subtle uppercase">01 · Spectrum</p>
         <h2 className="mt-3 max-w-3xl text-2xl font-medium tracking-tight">
-          Five families. Fourteen products. One question: whose kernel is it?
+          Five families. Fifteen products. One question: whose kernel is it?
         </h2>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted">
           Process sandboxes, app containers, and system containers all ask the host

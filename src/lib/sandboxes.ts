@@ -11,6 +11,7 @@ export type SystemId =
   | "codex"
   | "nono"
   | "incus"
+  | "code-on-incus"
   | "cloudflare"
   | "ghostvm"
   | "agent-sandbox-vm"
@@ -231,7 +232,7 @@ export const SYSTEMS: System[] = [
     workspace: "Instance disk, profiles, snapshots. Bind-mount the project if you want a live tree; golden images if you want disposable machines.",
     network: "Per-instance nic on an Incus bridge. Isolated from siblings unless you wire it. Docker on the same host is a known iptables fight.",
     nestedDocker: "Yes, the documented path: security.nesting=true, host-loaded kernel modules, optional /.dockerenv. No host docker.sock. This is a reason people pick Incus over an app container.",
-    harness: "Not a Claude/Codex wrapper. You install the agent inside the machine. Pere Villega's Sandbox for Claude is the worked example: `sandbox my-api --claude` drops you into Claude Code in its own Incus box.",
+    harness: "Not a Claude/Codex wrapper. You install the agent inside the machine. Pere Villega's Sandbox for Claude is the worked example: `sandbox my-api --claude` drops you into Claude Code in its own Incus box. code-on-incus is the packaged version of the same move — its own row.",
     useCases: [
       "Pere Villega, Sandbox for Claude — one Incus system container per project, btrfs golden images, nested Docker, tmux of several Claudes. The agent needs a laptop, not a process: apt, systemd, sudo, compose.",
       "Nested Docker without handing over the host socket",
@@ -255,6 +256,56 @@ export const SYSTEMS: System[] = [
       { label: "Incus FAQ: Docker inside", href: "https://linuxcontainers.org/incus/docs/main/faq/" },
       { label: "Pere Villega: Sandbox for Claude", href: "https://perevillega.com/posts/2026-03-03-ai-sandbox-coding-agents/" },
       { label: "github.com/pvillega/sandbox-claude", href: "https://github.com/pvillega/sandbox-claude" },
+    ],
+  },
+  {
+    id: "code-on-incus",
+    name: "code-on-incus",
+    short: "Incus wrap with active defense",
+    maker: "Maciej Mensfeld",
+    family: "system",
+    familyNote: "The yolobox of system containers. `coi shell` drops Claude Code, Codex, opencode, pi or omp into its own Incus system container — root, systemd, a native dockerd — on the host kernel. What Pere Villega scripted by hand, coi packages, then adds what no other row here has: nftables egress modes and a monitor that pauses or kills the box on its own.",
+    oneLiner: "Give every agent its own machine, then watch it: nftables on egress, a threat monitor on the box, auto-pause on HIGH, auto-kill on CRITICAL.",
+    role: "wrapper",
+    vmm: "None. Incus LXC on the host kernel; an Incus VM hardened mode is a filed follow-up, not a shipped flag.",
+    kernel: "shared",
+    openSource: "MIT, written in Go. Started as claude-on-incus in January 2026, generalized and renamed; the old name was retired in July 2026.",
+    platforms: "Linux with Incus. macOS through a Colima, Lima or OrbStack Linux VM — coi detects the VM and fixes UID mapping itself; the nftables modes work there, the nftables monitor does not.",
+    startup: "coi build bakes the image once (5–10 min); a container starts in seconds. Slots and persistent boxes reattach.",
+    overhead: "A full OS per box on a shared kernel, plus a monitor polling every 2 s. Resource and time limits per profile.",
+    workspace: "Bind-mounted at /workspace with idmap so files come out owned by you. .git/hooks, .vscode and .husky are mounted read-only and pinned host-side with chattr +i, so an unshare + umount inside cannot lift them. Ephemeral by default: the container is deleted, the workspace and the tool's session history always survive; persistent = true keeps installed packages. Slots (myproject, myproject-2 …) share the workspace with separate homes.",
+    network: "nftables on the host, not a proxy. restricted: public internet allowed, RFC1918, cloud metadata and IPv6 blocked. allowlist: domains and IPs, re-resolved on DNS TTL, subdomains listed explicitly, DNS itself blocked and served from /etc/hosts. open. allowed_ports and per-destination :ports scope it further; dns_servers pins resolvers. Needs passwordless sudo for nft; with use_sudo = false the restricted modes refuse to start rather than downgrade.",
+    nestedDocker: "Native dockerd baked into the image on security.nesting — the reason to be on Incus at all. The hardened profile turns nesting off and installs a syscall deny list; coi refuses to start any container with security.privileged = true.",
+    harness: "Claude Code is the default tool; Codex CLI, opencode, pi and omp are one config line away, and two profiles with the same session_name re-enter the same box with a different tool. Credentials are seeded per tool into the box (Claude shows its login screen if none), so the API token does live inside — the author says so. Headless: coi run --prompt with permission_mode = bypass.",
+    useCases: [
+      "YOLO Claude Code or Codex on a Linux box you own, with dockerd, apt and sudo inside and your SSH keys, .env and shell env outside",
+      "Several agents on one project at once — slots share /workspace and nothing else",
+      "Egress you can name: allowlist mode with per-host ports, DNS pinned, LAN and metadata blocked",
+      "A box that defends itself: bulk reads pause it, a reverse shell or a metadata hit kills it, and the audit log survives the box",
+    ],
+    notFor: [
+      "A kernel wall — this is LXC on your kernel, like Villega and unlike sbx",
+      "A request-level proxy: nftables sees hosts and ports, never a method or a header",
+      "Native macOS or Windows: a Linux VM first, then Incus, then coi",
+    ],
+    security: "Everything Incus gives — unprivileged idmap, AppArmor, seccomp, /dev/incus disabled, kernel version checked — plus a layer the other rows lack: a monitor. Reverse-shell patterns and the cloud-metadata endpoint are CRITICAL and kill the box; more than 50 MB read or written in a cycle and known attack ports are HIGH and pause it; environment scanning is a WARNING. forensics_on_kill copies the box before the kill, crediting Trail of Bits' 'VMs won't contain cyber-capable agents'. Still the host kernel.",
+    caveats: [
+      "Shared kernel: a Linux LPE lands on your host, monitor or not — the same row as Villega, not sbx",
+      "The API token is inside the box and the workspace is mounted; in open mode both can leave. Use restricted or allowlist — the hardened profile forces restricted even over a global open",
+      "Monitoring is patterns and thresholds: nc, bash -i, /dev/tcp, 50 MB — an exfil that stays under the rate and looks like a build passes",
+      "nftables enforcement wants passwordless sudo nft; on macOS the VM enforces the modes but the nftables monitor is unavailable",
+      "Prompts, env_commands and the default profile are honored only from ~/.coi, never from a repo's .coi/config.toml — a cloned repo cannot redefine what coi runs, which is the right default and also means per-repo setup is limited",
+    ],
+    scores: { isolation: 3, performance: 4, harnessFit: 5, untrustedCode: 3, laptopDx: 4 },
+    layers: ["hw", "host-kernel", "lxc", "distro", "nested", "agent"],
+    sources: [
+      { label: "github.com/mensfeld/code-on-incus", href: "https://github.com/mensfeld/code-on-incus" },
+      { label: "Maciej Mensfeld: Claude on Incus — all the autonomy, securely (Jan 2026)", href: "https://mensfeld.pl/2026/01/claude-on-incus-all-the-autonomy-securely/" },
+      { label: "Wiki: Network Isolation", href: "https://github.com/mensfeld/code-on-incus/wiki/Network-Isolation" },
+      { label: "Wiki: Security Monitoring", href: "https://github.com/mensfeld/code-on-incus/wiki/Security-Monitoring" },
+      { label: "Wiki: Security Best Practices", href: "https://github.com/mensfeld/code-on-incus/wiki/Security-Best-Practices" },
+      { label: "Wiki: macOS Setup Guide", href: "https://github.com/mensfeld/code-on-incus/wiki/macOS-Setup-Guide" },
+      { label: "Pere Villega on coi: 'the closest thing to what I wanted'", href: "https://perevillega.com/posts/2026-03-03-ai-sandbox-coding-agents/" },
     ],
   },
   {
@@ -820,6 +871,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "contained", note: "workspace-write cannot touch $HOME. danger-full-access can. Cloud clone never saw your home." },
       nono: { verdict: "contained", note: "Home is outside the grant unless the profile added it. A tool sandbox cannot widen that grant from inside." },
       incus: { verdict: "contained", note: "The instance has its own rootfs. Host $HOME appears only if you bind-mounted it (Pere Villega's default is that you did not)." },
+      "code-on-incus": { verdict: "contained", note: "Own rootfs, own home per slot. Host $HOME is not mounted; only /workspace and what you list under [[mounts.default]]." },
     },
   },
   {
@@ -842,6 +894,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local CLI: host kernel, exposed. Cloud task: contained in OpenAI's isolated environment." },
       nono: { verdict: "exposed", note: "Landlock and Seatbelt are still this kernel. no daemon, no VM — and no second kernel." },
       incus: { verdict: "exposed", note: "System containers share the host kernel. Unprivileged uid maps soften an escape-to-root; they do not stop a kernel LPE. Incus --vm would contain this; that is not this row." },
+      "code-on-incus": { verdict: "exposed", note: "Incus LXC on the host kernel. The hardened profile's syscall deny list narrows the surface and an Incus VM mode is an open follow-up; a monitor does not stop an LPE." },
     },
   },
   {
@@ -864,6 +917,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local: a Unix socket, allowlist-off once network_proxy is on, the same hole if you open it. Cloud: not your daemon." },
       nono: { verdict: "partial", note: "Deny the socket in the profile and it is closed. Allow docker or mount the socket and it is the same hole as Claude Code." },
       incus: { verdict: "contained", note: "The point of security.nesting: a dockerd inside the instance, not /var/run/docker.sock on the host." },
+      "code-on-incus": { verdict: "contained", note: "dockerd inside the box on security.nesting; no host socket. The hardened profile drops nesting altogether." },
     },
   },
   {
@@ -886,6 +940,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "contained", note: "Default-deny network is the winning control: nothing leaves a box with no route out. Once you allow a host, the allowlist proxy (deny wins, rebinding checks) decides where, not what — limited mode and MITM hooks read the method and path, and a secret in an allowed GET's query string passes both. Local still sees the workspace. Cloud strips environment secrets before the agent phase and sees only the clone." },
       nono: { verdict: "contained", note: "Phantom tokens: the child never holds GH_TOKEN. The proxy injects the real secret at the boundary and zeroises it. Workspace .env is still your problem." },
       incus: { verdict: "partial", note: "Host creds stay out unless you passed them in. Egress is whatever the instance's nic can reach — Incus is not a secret proxy." },
+      "code-on-incus": { verdict: "partial", note: "Host SSH keys, .env and env vars stay out unless mounted; the tool's API token is inside. restricted still allows the public internet; allowlist plus allowed_ports narrows it, and the monitor pauses at 50 MB — a small secret in a small request is under every threshold." },
     },
   },
   {
@@ -908,6 +963,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local workspace-write: exposed. Cloud clone: the laptop copy survives; you review a PR." },
       nono: { verdict: "exposed", note: "The grant is the worktree. Tool sandboxes do not snapshot your git history." },
       incus: { verdict: "partial", note: "On a golden-image clone the laptop repo is safe until you bind-mounted it. Pere Villega bind-mounts the project — then a wipe is real, like yolobox." },
+      "code-on-incus": { verdict: "partial", note: "/workspace is a live bind mount: rm is real, like yolobox and Villega. Only the protected paths (.git/hooks, .vscode, .husky) are read-only." },
     },
   },
   {
@@ -930,6 +986,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local: host Docker, same tension — OpenAI's reference devcontainer puts Docker outside as the wall instead. Cloud: only if the environment image provides an engine." },
       nono: { verdict: "exposed", note: "Wraps the CLI, does not give it an engine. Compose means the host Docker or a denied socket." },
       incus: { verdict: "contained", note: "This is a primary Incus use case. Nested dockerd in the system container; host socket stays off. Heavier than sbx, cheaper than a dedicated kernel." },
+      "code-on-incus": { verdict: "contained", note: "Native dockerd in the box — the reason coi is on Incus. Heavier than sbx, no second kernel." },
     },
   },
   {
@@ -952,6 +1009,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local: no. Cloud: OpenAI is the multi-tenant operator, not you." },
       nono: { verdict: "exposed", note: "A laptop wrapper. Shared kernel, one operator." },
       incus: { verdict: "partial", note: "This is what Incus clustering and unprivileged LXC are for — dense tenancy on Linux. Still the host kernel. Hostile tenants that need a kernel wall want --vm or a microVM." },
+      "code-on-incus": { verdict: "partial", note: "Slots and per-project boxes on one Incus host, unprivileged. Still one kernel; hostile tenants want a VM." },
     },
   },
   {
@@ -998,6 +1056,7 @@ export const THREATS: Threat[] = [
         verdict: "contained",
         note: "Many system containers per host is the design. Pere Villega's `sandbox backend frontend --claude` is two Incus boxes in tmux, each with its own Docker. On a Mac they still share the one Colima/OrbStack Linux VM.",
       },
+      "code-on-incus": { verdict: "contained", note: "Slots are the design: coi shell twice gives myproject and myproject-2 — same workspace, separate homes, packages, processes and conversations. On a Mac both live in the one Colima/OrbStack VM." },
     },
   },
   {
@@ -1020,6 +1079,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "contained", note: "Local: network is off at the syscall level by default; once on, the proxy's allow_local_binding = false blocks loopback, link-local and private ranges, and any hostname that resolves there. Cloud tasks have no route to your laptop at all." },
       nono: { verdict: "partial", note: "The L7 proxy and Landlock TCP rules can deny localhost; whether they do is the profile. A permissive profile leaves the host's ports open." },
       incus: { verdict: "partial", note: "Own network namespace on an Incus bridge. 127.0.0.1-bound host services are unreachable; anything bound on the bridge or 0.0.0.0 is not. Same shape as yolobox." },
+      "code-on-incus": { verdict: "partial", note: "restricted and allowlist block RFC1918 and the metadata IP host-side, so the LAN and cloud metadata are off. Traffic to the bridge gateway is always permitted for host-to-container use, so a host service bound on the bridge is reachable." },
     },
   },
   {
@@ -1042,6 +1102,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: ".git, .agents and .codex are read-only in workspace-write, so hooks and agent config are covered. Anything else in the tree is fair game. Cloud: the plant arrives as a PR you review." },
       nono: { verdict: "partial", note: "The grant is the tree; deny .git/hooks and dotfiles in the profile and it is closed. The default profile is what you audit." },
       incus: { verdict: "partial", note: "Golden-image clone: the plant dies with the box. Bind-mounted project (the Villega default): live mount, same as yolobox." },
+      "code-on-incus": { verdict: "partial", note: "Ephemeral container, live workspace: a package.json script the agent edited runs on your host later. .git/hooks, .vscode and .husky are read-only and chattr +i'd for exactly this reason. Tool session history persists by design." },
     },
   },
   {
@@ -1064,6 +1125,7 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Approvals gate the command locally, and auto_review can hand the escalation to a reviewer agent that denies critical-risk actions and fails closed. Cloud comes back as a PR: the strongest shape, because a human sees the diff before it lands." },
       nono: { verdict: "partial", note: "The best of the wrappers: gh gets the token only inside its own child sandbox, and the L7 policy can allow read-PR while denying push. The policy is still yours to write." },
       incus: { verdict: "exposed", note: "Whatever you put in the machine is the machine's. Incus has no credential proxy." },
+      "code-on-incus": { verdict: "partial", note: "A held token is usable — coi has no request proxy. What it adds is the monitor: reverse shells and metadata hits kill the box, bulk reads pause it. Intent is not judged." },
     },
   },
 ];
@@ -1095,6 +1157,7 @@ export const HARNESSES = [
       codex: "—",
       nono: "Wrap + signed profile",
       incus: "Install inside the machine",
+      "code-on-incus": "Default tool; ~/.claude seeded, login screen if no key",
     } as Record<SystemId, string>,
   },
   {
@@ -1115,6 +1178,7 @@ export const HARNESSES = [
       codex: "Native",
       nono: "Wrap + signed profile",
       incus: "Install inside the machine",
+      "code-on-incus": "One config line; TOML config, so no settings-file injection",
     } as Record<SystemId, string>,
   },
   {
@@ -1135,6 +1199,7 @@ export const HARNESSES = [
       codex: "—",
       nono: "Wrap + signed profile",
       incus: "Install inside the machine",
+      "code-on-incus": "Not a supported tool (Aider and Cursor are next)",
     } as Record<SystemId, string>,
   },
   {
@@ -1155,6 +1220,7 @@ export const HARNESSES = [
       codex: "—",
       nono: "Wrap + signed profile",
       incus: "Install inside the machine",
+      "code-on-incus": "Supported; sessions live in .opencode/ in the workspace",
     } as Record<SystemId, string>,
   },
   {
@@ -1175,6 +1241,7 @@ export const HARNESSES = [
       codex: "No",
       nono: "Any CLI via a profile",
       incus: "OCI or a full distro",
+      "code-on-incus": "pi and omp supported; anything else you install in the box",
     } as Record<SystemId, string>,
   },
   {
@@ -1195,6 +1262,7 @@ export const HARNESSES = [
       codex: "Not this product",
       nono: "No",
       incus: "If you image a browser into the machine",
+      "code-on-incus": "If you image a browser into the box",
     } as Record<SystemId, string>,
   },
 ];
@@ -1224,6 +1292,7 @@ export const MATRIX_ROWS: {
       codex: "Seatbelt + bwrap/seccomp; Windows sandbox",
       nono: "Landlock + Seatbelt + tool broker",
       incus: "Unprivileged LXC",
+      "code-on-incus": "Unprivileged LXC via Incus",
     },
   },
   {
@@ -1245,6 +1314,7 @@ export const MATRIX_ROWS: {
       codex: "Shared locally; isolated in cloud",
       nono: "Shared host",
       incus: "Shared host (LXC). Dedicated if --vm",
+      "code-on-incus": "Shared host",
     },
   },
   {
@@ -1266,6 +1336,7 @@ export const MATRIX_ROWS: {
       codex: "Same locally; none documented in cloud",
       nono: "A policy, not a device wall — whatever the process could already reach",
       incus: "gpu device: physical for containers or VMs; mdev, SR-IOV, MIG for --vm",
+      "code-on-incus": "Not scripted; Incus gpu device underneath",
     },
   },
   {
@@ -1287,6 +1358,7 @@ export const MATRIX_ROWS: {
       codex: "Harness (built-in)",
       nono: "Agent wrapper",
       incus: "Machine runtime",
+      "code-on-incus": "Agent wrapper",
     },
   },
   {
@@ -1308,6 +1380,7 @@ export const MATRIX_ROWS: {
       codex: "None locally; requirements.toml from admins; OpenAI cloud",
       nono: "None (child process + proxy)",
       incus: "incusd on Linux",
+      "code-on-incus": "coi over incusd; a monitor per box",
     },
   },
   {
@@ -1329,6 +1402,7 @@ export const MATRIX_ROWS: {
       codex: "Harness outside; commands inside (local). Everything inside (cloud)",
       nono: "Supervisor outside; agent session + each tool child inside",
       incus: "Whole CLI inside the machine",
+      "code-on-incus": "Whole CLI inside the box",
     },
   },
   {
@@ -1350,6 +1424,7 @@ export const MATRIX_ROWS: {
       codex: "Spawn / cloud provision",
       nono: "Process spawn",
       incus: "Launch, or ms CoW clone",
+      "code-on-incus": "Seconds; image baked once",
     },
   },
   {
@@ -1371,6 +1446,7 @@ export const MATRIX_ROWS: {
       codex: "Policy / ephemeral machine",
       nono: "Policy only",
       incus: "A full OS, no hypervisor",
+      "code-on-incus": "A full OS per slot",
     },
   },
   {
@@ -1392,6 +1468,7 @@ export const MATRIX_ROWS: {
       codex: "MAC policy; cloud machine",
       nono: "MAC policy on session + each tool",
       incus: "User ns + AppArmor; still this kernel",
+      "code-on-incus": "User ns + AppArmor + seccomp; nftables; monitor",
     },
   },
   {
@@ -1413,6 +1490,7 @@ export const MATRIX_ROWS: {
       codex: "Local: live tree, .git read-only. Cloud: clone → PR",
       nono: "Live grant",
       incus: "Golden-image CoW clone, or bind-mount",
+      "code-on-incus": "Live bind at /workspace; protected paths read-only",
     },
   },
   {
@@ -1434,6 +1512,7 @@ export const MATRIX_ROWS: {
       codex: "Off; CONNECT + SOCKS5 allowlist proxy when on; limited mode MITMs HTTPS to clamp methods",
       nono: "L7 proxy, phantom tokens",
       incus: "Bridged nic",
+      "code-on-incus": "nftables: restricted / allowlist / open",
     },
   },
   {
@@ -1455,6 +1534,7 @@ export const MATRIX_ROWS: {
       codex: "Is the CLI",
       nono: "Wraps the CLI",
       incus: "Install it in the machine",
+      "code-on-incus": "permission_mode = bypass is the headless default",
     },
   },
   {
@@ -1476,6 +1556,7 @@ export const MATRIX_ROWS: {
       codex: "No",
       nono: "No — wrap, don't embed",
       incus: "REST API + CLI",
+      "code-on-incus": "CLI + TOML profiles; coi run for scripts",
     },
   },
 ];
@@ -1487,7 +1568,7 @@ export function systemById(id: SystemId) {
 export const FAMILY_SYSTEMS: Record<Family, SystemId[]> = {
   process: ["claude-code", "codex", "nono"],
   container: ["yolobox"],
-  system: ["incus"],
+  system: ["incus", "code-on-incus"],
   microvm: ["docker-sbx", "microsandbox", "hypeman", "cloudflare"],
   vm: ["ghostvm", "agent-sandbox-vm", "utm", "cua-sandbox", "lume"],
 };
@@ -1513,6 +1594,20 @@ export const SYSTEM_CONTAINER_CASES: {
     sources: [
       { label: "I built yet another sandbox", href: "https://perevillega.com/posts/2026-03-03-ai-sandbox-coding-agents/" },
       { label: "pvillega/sandbox-claude", href: "https://github.com/pvillega/sandbox-claude" },
+    ],
+  },
+  {
+    id: "mensfeld",
+    title: "Maciej Mensfeld · code-on-incus",
+    verdict: "need",
+    need: "Same shape as Villega — one Incus system container per project, root, systemd, native Docker — packaged as `coi` for five agents instead of one person's script, with two things on top: nftables egress modes (restricted, allowlist, open) and a monitor that pauses the box on bulk reads and kills it on a reverse shell. Villega calls it 'the closest thing to what I wanted' and built his own for OrbStack-and-remote-Linux parity, which coi has since added.",
+    vsDocker: "The README's own table gives Docker Sandbox 'basic' network isolation and 'partial' credential isolation against coi's nftables modes and never-exposed host credentials. The honest half is that sbx has the kernel wall and coi does not.",
+    vsMicrovm: "sbx or hypeman when the threat is a kernel bug. coi's answer to Trail of Bits' 'VMs won't contain cyber-capable agents' is not a VM — it is watching the box and keeping a forensic copy before the kill.",
+    vsProcess: "nono and Claude's bash box cannot apt, cannot run dockerd, and have no monitor. They also do not put the API token inside the box.",
+    sources: [
+      { label: "mensfeld/code-on-incus", href: "https://github.com/mensfeld/code-on-incus" },
+      { label: "Claude on Incus — all the autonomy, securely", href: "https://mensfeld.pl/2026/01/claude-on-incus-all-the-autonomy-securely/" },
+      { label: "Trail of Bits: VMs won't contain cyber-capable agents", href: "https://blog.trailofbits.com/2026/08/26/vms-wont-contain-cyber-capable-agents/" },
     ],
   },
   {
