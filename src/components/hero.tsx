@@ -62,8 +62,9 @@ export function Spectrum() {
           — gVisor's user-space kernel and V8/Wasm runtimes with no kernel at all —
           and the hosted sandboxes you can rent (E2B, Vercel Sandbox, Modal, Cloudflare
           Sandbox) are one of these four or those two, run on someone else's fleet.
-          Read left to right and the product changes: the first family subtracts from
-          your machine, the other four hand the agent a machine of its own.
+          Read left to right and the product changes: the first two families subtract
+          from your machine — a policy or a namespace around a process — and the other
+          three hand the agent a machine of its own.
         </p>
         <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {FAMILIES.map((fam, i) => (
