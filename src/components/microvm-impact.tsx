@@ -29,7 +29,7 @@ const POINTS = [
   },
   {
     title: "Off the axis: user-space kernels and no kernel at all",
-    body: "Two primitives do not fit the four rows. gVisor runs a Go kernel in user space that answers the workload's syscalls, so a Linux kernel LPE has no Linux kernel to land on — Modal, Cloud Run and Google's Agent Sandbox default to it, and it can sit on KVM or on a seccomp'd host process. V8 isolates and Wasm runtimes have no syscall surface to begin with; Cloudflare Workers and Deno Deploy live there. Both trade compatibility for a narrower attack surface. If you rent a sandbox — Cloudflare Sandbox, E2B, Vercel Sandbox, Fly (all Firecracker), Modal (gVisor) — the buyer question is which of these you got, and who holds the secrets. Cloudflare is the clean case: the Worker calling getSandbox is an isolate, the sandbox it gets is a microVM, and the egress handler between them is where the secret lives.",
+    body: "Two primitives do not fit the four rows. gVisor runs a Go kernel in user space that answers the workload's syscalls, so a Linux kernel LPE has no Linux kernel to land on — Modal, Cloud Run and Google's Agent Sandbox default to it, and it can sit on KVM or on a seccomp'd host process. Its nvproxy (runsc --nvproxy) is the one GPU story on this list that is neither passthrough nor paravirtual: the sandbox forwards a filtered set of NVIDIA ioctls to the host driver, T4 through H100 supported. V8 isolates and Wasm runtimes have no syscall surface to begin with; Cloudflare Workers and Deno Deploy live there. Both trade compatibility for a narrower attack surface. If you rent a sandbox — Cloudflare Sandbox, E2B, Vercel Sandbox, Fly (all Firecracker), Modal (gVisor) — the buyer question is which of these you got, and who holds the secrets. Cloudflare is the clean case: the Worker calling getSandbox is an isolate, the sandbox it gets is a microVM, and the egress handler between them is where the secret lives.",
   },
   {
     title: "The guest OS is a use case, not a detail",
@@ -38,6 +38,10 @@ const POINTS = [
   {
     title: "The wall does not judge intent",
     body: "A prompt injection that makes the agent push a backdoor with the token you gave it never crosses any boundary on this page. Isolation bounds a compromised process; it does not authorise its actions. That job belongs to token scope, per-tool brokering (nono), permission hooks (Claude Code), approvals and the auto-review agent (Codex), a per-host egress handler that can refuse a method (Cloudflare), and a human reading the PR before it lands — Codex cloud's clone-then-PR is the strongest shape here precisely because it is not a sandbox feature.",
+  },
+  {
+    title: "Two products share the word sandbox",
+    body: "Subtraction: nono, Claude Code's Seatbelt profile, Codex's bwrap+seccomp, sandbox-runtime, fence, landrun, Litterbox — a fence around your machine, everything else on it left as you had it. Addition: sbx, microsandbox, hypeman, Cloudflare, GhostVM, Lume, Incus — a machine you hand over, nothing of yours inside it unless you mounted it. The first cannot survive a kernel bug and does not need a kernel. The second cannot see your Metal GPU, your keychain, or your dockerd, and the whole product is deciding which of those to pass back through. Most of the rough edges on this site — live mounts, docker.sock, the Mac GPU, two-guest caps — are one side borrowing the other's promise.",
   },
   {
     title: "Pick the unit of isolation to match the unit of trust",

@@ -30,6 +30,16 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
+            <a className="hover:text-fg" href="https://rywalker.com/research/local-agent-sandboxes">
+              Ry Walker: Local AI Agent Sandboxes Compared · fence · landrun · Litterbox
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://gvisor.dev/docs/user_guide/gpu/">
+              gVisor nvproxy · hypeman GPU (VFIO, vGPU) · sbx experimental GPU
+            </a>
+          </li>
+          <li>
             <a className="hover:text-fg" href="https://learn.chatgpt.com/docs/sandboxing">
               Codex sandboxing · agent approvals &amp; security · cloud internet access
             </a>
@@ -112,7 +122,10 @@ export function SiteFooter() {
         </ul>
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-subtle">
           Scores are relative and qualitative. Startup numbers are vendor-reported or typical of
-          the primitive, not a benchmark we ran. Cloud Codex and Claude Code on the web are
+          the primitive, not a benchmark we ran. Docker's sbx VMM was once described here as
+          libkrun-family; Docker's own docs call it purpose-built, and the resource defaults
+          (all cores, half of RAM) come from sbx run --help, not the 2 CPU / 4 GiB cloud default.
+          Cloud Codex and Claude Code on the web are
           different boxes from the local CLIs — the app treats each as two surfaces of one
           product. Cloudflare's docs say only "its own VM"; the Firecracker attribution comes
           from the Containers launch coverage, not the Sandbox SDK pages. The Claude Code on the web observation (Firecracker guest kernel, vsock init,
