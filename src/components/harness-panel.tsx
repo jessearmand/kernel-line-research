@@ -35,11 +35,11 @@ export function HarnessPanel() {
         {[
           {
             t: "Wrappers",
-            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist. sbx is a microVM with a private engine. In all three the harness and its own API token live inside the box.",
+            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy — as are sandbox-runtime, fence and landrun, the smaller wrappers this site folds into that row. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist, and Litterbox on Podman. sbx is a microVM with a private engine. In all of them the harness and its own API token live inside the box.",
           },
           {
             t: "Harness sandboxes",
-            d: "Claude Code and Codex sandbox themselves — the harness stays outside, only the commands go in. Claude's box covers Bash; MCP servers and hooks run on the host unless you use sandbox-runtime. Codex leans on default-on kernel policy, default-off network with an allowlist proxy once opened, read-only .git / .agents / .codex, and an approval layer (untrusted, on-request, never, or a reviewer agent). Wrap either with nono/yolobox/sbx for a thicker outer box.",
+            d: "Claude Code and Codex sandbox themselves — the harness stays outside, only the commands go in. Claude's box covers Bash; MCP servers and hooks run on the host unless you use sandbox-runtime. Codex leans on default-on kernel policy, default-off network with an allowlist proxy once opened (a limited mode MITMs HTTPS to clamp methods to GET/HEAD/OPTIONS), read-only .git / .agents / .codex, and an approval layer (untrusted, on-request, never, or a reviewer agent). Wrap either with nono/yolobox/sbx for a thicker outer box.",
           },
           {
             t: "System containers",
