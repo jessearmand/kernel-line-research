@@ -85,9 +85,9 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
   }
   if (job === "machine") {
     return {
-      winner: "incus",
-      also: threat === "hostile" ? ["docker-sbx"] : ["yolobox", "docker-sbx"],
-      why: "You wanted a laptop, not a process. Incus system containers are that shape: systemd, apt, sudo, nested Docker, CoW clones. Pere Villega's Sandbox for Claude is the worked example. Promote to sbx the moment the threat includes a kernel CVE — Incus LXC still shares the host kernel.",
+      winner: "code-on-incus",
+      also: threat === "hostile" ? ["incus", "docker-sbx"] : ["incus", "yolobox", "docker-sbx"],
+      why: "You wanted a laptop, not a process. Incus system containers are that shape: systemd, apt, sudo, nested Docker, CoW clones. code-on-incus packages it — coi shell puts the agent in the box with nftables egress modes and a monitor that pauses on bulk reads and kills on a reverse shell. Plain Incus if you would rather script it yourself, as Pere Villega did. On a Mac the Linux VM is part of the pick: coi runs on Colima or Lima (MIT) as well as OrbStack, and OrbStack is closed source and free only for personal use, so an all-open-source stack is Incus on Colima with coi. Promote to sbx the moment the threat includes a kernel CVE — Incus LXC still shares the host kernel.",
     };
   }
   if (job === "embed") {

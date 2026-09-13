@@ -32,9 +32,9 @@ function Home() {
         </Section>
         <Section
           id="systems"
-          eyebrow="03 · Fourteen systems"
-          title="Wrappers, harnesses, a machine runtime, three microVM runtimes, five full VMs."
-          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent. GhostVM, UTM, Lume and agent-sandbox-vm boot a macOS or Windows guest, for the jobs no Linux box can do. Cua Sandbox is the computer-use version: one machine the agent both codes in and clicks through, from a Docker container up to a Lume macOS guest."
+          eyebrow="03 · Fifteen systems"
+          title="Wrappers, harnesses, a machine runtime and its wrap, three microVM runtimes, five full VMs."
+          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example, code-on-incus the packaged one, with nftables egress and a monitor that pauses or kills the box. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent. GhostVM, UTM, Lume and agent-sandbox-vm boot a macOS or Windows guest, for the jobs no Linux box can do. Cua Sandbox is the computer-use version: one machine the agent both codes in and clicks through, from a Docker container up to a Lume macOS guest."
         >
           <SystemGrid />
         </Section>
@@ -42,7 +42,7 @@ function Home() {
           id="need"
           eyebrow="04 · System containers"
           title="When the agent needs a Linux machine, not a process."
-          lede="App containers (Docker, yolobox) isolate a process. System containers (Incus LXC) isolate a distro that still shares your kernel. Click a job. The Pere Villega setup is the canonical 'I wanted a laptop' case."
+          lede="App containers (Docker, yolobox) isolate a process. System containers (Incus LXC) isolate a distro that still shares your kernel. Click a job. The Pere Villega setup is the canonical 'I wanted a laptop' case; code-on-incus is the same case as a product."
         >
           <SystemNeed />
         </Section>

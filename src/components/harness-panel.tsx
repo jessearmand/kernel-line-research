@@ -43,7 +43,7 @@ export function HarnessPanel() {
           },
           {
             t: "System containers",
-            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones.",
+            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones. code-on-incus is the wrap: coi shell puts Claude Code, Codex, opencode, pi or omp in the box, seeds that tool's credentials into it, and watches it with nftables and a threat monitor.",
           },
           {
             t: "Runtimes",
