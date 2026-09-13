@@ -45,6 +45,11 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
+            <a className="hover:text-fg" href="https://github.com/openai/codex/blob/36f0dbe796d9bb1a18a0fc0640ed08b3e1d54564/codex-rs/network-proxy/README.md">
+              openai/codex codex-rs/network-proxy @ 36f0dbe · README, config.rs, mitm.rs
+            </a>
+          </li>
+          <li>
             <a className="hover:text-fg" href="https://nono.sh/">
               nono.sh · github.com/nolabs-ai/nono
             </a>
