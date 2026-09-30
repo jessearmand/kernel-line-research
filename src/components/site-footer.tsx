@@ -30,8 +30,23 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
-            <a className="hover:text-fg" href="https://developers.openai.com/codex/security/">
-              Codex security / linux-sandbox
+            <a className="hover:text-fg" href="https://rywalker.com/research/local-agent-sandboxes">
+              Ry Walker: Local AI Agent Sandboxes Compared · fence · landrun · Litterbox
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://gvisor.dev/docs/user_guide/gpu/">
+              gVisor nvproxy · hypeman GPU (VFIO, vGPU) · sbx experimental GPU
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://learn.chatgpt.com/docs/sandboxing">
+              Codex sandboxing · agent approvals &amp; security · cloud internet access
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://github.com/openai/codex/blob/36f0dbe796d9bb1a18a0fc0640ed08b3e1d54564/codex-rs/network-proxy/README.md">
+              openai/codex codex-rs/network-proxy @ 36f0dbe · README, config.rs, mitm.rs
             </a>
           </li>
           <li>
@@ -42,6 +57,11 @@ export function SiteFooter() {
           <li>
             <a className="hover:text-fg" href="https://perevillega.com/posts/2026-03-03-ai-sandbox-coding-agents/">
               Pere Villega: Sandbox for Claude · Incus
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://github.com/mensfeld/code-on-incus">
+              mensfeld/code-on-incus · wiki (network isolation, security monitoring) · mensfeld.pl
             </a>
           </li>
           <li>
@@ -89,13 +109,58 @@ export function SiteFooter() {
               gVisor · Modal sandbox security · Vercel Sandbox concepts (Firecracker)
             </a>
           </li>
+          <li>
+            <a className="hover:text-fg" href="https://developers.cloudflare.com/sandbox/concepts/">
+              Cloudflare Sandbox SDK concepts · security model · outbound handlers · Containers lifecycle
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://openai.com/index/running-codex-safely/">
+              OpenAI: Running Codex safely · requirements.toml · auto-review
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://ghostvm.org/">
+              GhostVM · vsock services · snapshots · github.com/groundwater/GhostVM
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://github.com/glslang/agent-sandbox-vm">
+              glslang/agent-sandbox-vm · Hyper-V · Virtualization.framework · Parallels
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://mac.getutm.app/">
+              UTM · macOS guest support · utmctl
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://eclecticlight.co/2022/08/04/virtualisation-on-apple-silicon-macs-8-how-apple-limits-vms/">
+              Eclectic Light: how Apple limits macOS VMs (two guests, no nesting)
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://cua.ai/docs/concepts/how-sandboxes-work">
+              Cua: how sandboxes work · runtime support 0.4.3 · sandbox images
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://cua.ai/docs/concepts/how-lume-unattended-setup-works">
+              Lume: unattended macOS setup · SIP via Recovery · CLI reference · limits
+            </a>
+          </li>
         </ul>
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-subtle">
           Scores are relative and qualitative. Startup numbers are vendor-reported or typical of
-          the primitive, not a benchmark we ran. Cloud Codex and Claude Code on the web are
+          the primitive, not a benchmark we ran. Docker's sbx VMM was once described here as
+          libkrun-family; Docker's own docs call it purpose-built, and the resource defaults
+          (all cores, half of RAM) come from sbx run --help, not the 2 CPU / 4 GiB cloud default.
+          Cloud Codex and Claude Code on the web are
           different boxes from the local CLIs — the app treats each as two surfaces of one
-          product. OpenShell (commit 5acaaba) and discobox (commit 4a7f956) were read from source and
-          design records in Sep 2026, not run; both are moving fast. The Claude Code on the web observation (Firecracker guest kernel, vsock init,
+          product. Cloudflare's docs say only "its own VM"; the Firecracker attribution comes
+          from the Containers launch coverage, not the Sandbox SDK pages. OpenShell (commit 5acaaba) and discobox
+          (commit 4a7f956) were read from source and design records in Sep 2026, not run; both are moving fast.
+          The Claude Code on the web observation (Firecracker guest kernel, vsock init,
           host-local connections blocked, credential proxy) was taken from inside one such session
           in Sep 2026 and may change. Workload ratings in the Workloads section are judgement from these sources, not
           measurements. Firecracker's lack of GPU passthrough comes from its documented virtio-only device model and

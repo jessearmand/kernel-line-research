@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Nitro's cloudflare-module preset merges this into the generated
+  // .output/server/wrangler.json (main, assets, nodejs_compat) and points
+  // wrangler at it via .wrangler/deploy/config.json. Keep only identity here.
+  "name": "kernel-line-research",
+  "compatibility_date": "2026-09-03",
+  "observability": {
+    "enabled": true
+  }
+}

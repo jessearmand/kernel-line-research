@@ -21,18 +21,18 @@ export function Hero() {
           <span className="mt-2 block text-muted">Everything else is a policy.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
-          yolobox, Docker sbx, microsandbox, hypeman, Claude Code, Codex, nono,
-          Incus, OpenShell, and discobox sit on four isolation primitives. Process,
-          app container, system container, microVM — one question: whose kernel is it?
-          That question decides whether a compromise reaches your host. It does not
-          decide what a desktop agent can see, spend, or click.
+          yolobox, Docker sbx, microsandbox, hypeman, Cloudflare Sandbox, GhostVM, UTM,
+          agent-sandbox-vm, Cua Sandbox, Lume, Claude Code, Codex, nono, Incus,
+          code-on-incus, OpenShell, and discobox sit on five isolation primitives. Process, app container, system container, microVM, full VM — one
+          question: whose kernel is it, and whose OS? That question decides whether a compromise
+          reaches your host. It does not decide what a desktop agent can see, spend, or click.
         </p>
         <dl className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border md:grid-cols-4">
           {[
             { k: "Shared kernel", v: "Process · app · system" },
-            { k: "Dedicated kernel", v: "MicroVM" },
-            { k: "Wrappers", v: "nono · yolobox · sbx · discobox" },
-            { k: "Machines & planes", v: "Incus · msb · hypeman · OpenShell" },
+            { k: "Dedicated kernel", v: "MicroVM · Full VM" },
+            { k: "Wrappers", v: "nono · yolobox · sbx · coi · discobox" },
+            { k: "Machines & planes", v: "Incus · msb · hypeman · CF · GhostVM · OpenShell" },
           ].map((item) => (
             <div key={item.k} className="bg-bg-elevated px-4 py-4 md:px-5 md:py-5">
               <dt className="font-mono text-[11px] tracking-wide text-subtle uppercase">{item.k}</dt>
@@ -51,20 +51,25 @@ export function Spectrum() {
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <p className="font-mono text-xs tracking-[0.18em] text-subtle uppercase">01 · Spectrum</p>
         <h2 className="mt-3 max-w-3xl text-2xl font-medium tracking-tight">
-          Four families. Ten products. One question: whose kernel is it?
+          Five families. Seventeen products. One question: whose kernel is it?
         </h2>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted">
           Process sandboxes, app containers, and system containers all ask the host
           kernel to please isolate a workload. A microVM boots a second kernel so that
           question never reaches the host. System containers are the missing row:
-          a full Linux machine, still that kernel. Two of the ten, OpenShell and
-          discobox, are control planes that can sit on more than one row, so read
-          the row of the driver or pool you will run. Two primitives sit off this axis
+          a full Linux machine, still that kernel. Full VMs are the row Linux sandboxes
+          skip: the guest is macOS or Windows, because the agent's job is Xcode or MSVC.
+          Two of the seventeen, OpenShell and discobox, are control planes that can sit on
+          more than one row, so read the row of the driver or pool you will run.
+          Two primitives sit off this axis
           — gVisor's user-space kernel and V8/Wasm runtimes with no kernel at all —
-          and the hosted sandboxes you can rent (E2B, Vercel Sandbox, Modal) are one
-          of these four or those two, run on someone else's fleet.
+          and the hosted sandboxes you can rent (E2B, Vercel Sandbox, Modal, Cloudflare
+          Sandbox) are one of these four or those two, run on someone else's fleet.
+          Read left to right and the product changes: the first two families subtract
+          from your machine — a policy or a namespace around a process — and the other
+          three hand the agent a machine of its own.
         </p>
-        <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {FAMILIES.map((fam, i) => (
             <li
               key={fam.id}

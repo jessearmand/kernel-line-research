@@ -81,7 +81,7 @@ export function WorkloadLens() {
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm text-muted">None of the ten ships this today.</p>
+              <p className="mt-2 text-sm text-muted">No system on this page ships this today.</p>
             )}
           </div>
         </article>

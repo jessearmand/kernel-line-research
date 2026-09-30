@@ -31,23 +31,27 @@ export function HarnessPanel() {
           </tbody>
         </table>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {[
           {
             t: "Wrappers",
-            d: "nono, yolobox, discobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist. sbx is a microVM with a private engine. In all three the harness and its own API token live inside the box.",
+            d: "nono, yolobox, discobox, and Docker sbx launch someone else's CLI. nono is a process policy — as are sandbox-runtime, fence and landrun, the smaller wrappers this site folds into that row. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist, and Litterbox on Podman. sbx is a microVM with a private engine. In all of them the harness and its own API token live inside the box.",
           },
           {
             t: "Harness sandboxes",
-            d: "Claude Code and Codex sandbox themselves — the harness stays outside, only the commands go in. Claude's box covers Bash; MCP servers and hooks run on the host unless you use sandbox-runtime. Codex leans on default-on kernel policy, default-off network, and a read-only .git. Wrap either with nono/yolobox/sbx for a thicker outer box.",
+            d: "Claude Code and Codex sandbox themselves — the harness stays outside, only the commands go in. Claude's box covers Bash; MCP servers and hooks run on the host unless you use sandbox-runtime. Codex leans on default-on kernel policy, default-off network with an allowlist proxy once opened (a limited mode MITMs HTTPS to clamp methods to GET/HEAD/OPTIONS), read-only .git / .agents / .codex, and an approval layer (untrusted, on-request, never, or a reviewer agent). Wrap either with nono/yolobox/sbx for a thicker outer box.",
           },
           {
             t: "System containers",
-            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones. discobox packages the same shape as harness images and adds a pool, a proxy and a git-based hand-back.",
+            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones. discobox is a second wrap of the same shape, with a pool, a per-box proxy and a git hand-back instead of a bind mount. code-on-incus is the wrap: coi shell puts Claude Code, Codex, opencode, pi or omp in the box, seeds that tool's credentials into it, and watches it with nftables and a threat monitor.",
           },
           {
             t: "Runtimes",
-            d: "microsandbox and hypeman run OCI as a VM. You image Claude into them if you want; their native client is your code, not Anthropic's CLI. OpenShell is a control plane over runtimes like these: you image the agent, then it supplies the policy, credentials and audit.",
+            d: "microsandbox and hypeman run OCI as a VM on hardware you own. OpenShell is a control plane over runtimes like these: you image the agent, and it supplies policy, credentials and audit. Cloudflare Sandbox runs it as a Firecracker VM on Cloudflare's, with your Worker as the control plane and the egress proxy. You image Claude Code or OpenCode into any of them; their native client is your code, not Anthropic's CLI.",
+          },
+          {
+            t: "Full VMs",
+            d: "GhostVM, UTM, Lume and agent-sandbox-vm boot a whole macOS or Windows guest and you install the agent inside like on any Mac or PC. Nothing here wraps a CLI; the host-side handles are vmctl remote exec, utmctl, lume ssh, PowerShell Direct or prlctl exec. Cua Sandbox is the exception in kind: its native client is a computer-use agent that clicks and types, with a shell and a Python venv on the same machine. The harness and its login live in the guest, which is why the products push one workspace per client.",
           },
         ].map((x) => (
           <article key={x.t} className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">

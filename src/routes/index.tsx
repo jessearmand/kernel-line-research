@@ -28,8 +28,8 @@ function Home() {
         <Section
           id="stack"
           eyebrow="02 · Stack"
-          title="The same attack, four different walls."
-          lede="Click a layer. Then trace a kernel CVE upward from the agent. On a process sandbox, an app container, or a system container the pulse reaches the host kernel. On a microVM it stops at the guest."
+          title="The same attack, five different walls."
+          lede="Click a layer. Then trace a kernel CVE upward from the agent. On a process sandbox, an app container, or a system container the pulse reaches the host kernel. On a microVM or a full VM it stops at the guest — and on a full VM the guest is not even Linux."
         >
           <StackExplorer />
         </Section>
@@ -51,9 +51,9 @@ function Home() {
         </Section>
         <Section
           id="systems"
-          eyebrow="05 · Ten systems"
-          title="Wrappers, harnesses, a machine runtime, two VM runtimes, two control planes."
-          lede="nono, yolobox, sbx and discobox wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are general VM runtimes. OpenShell is a policy gateway over Docker, Kubernetes or a microVM, and discobox is a box manager over a pool host that is a VM or a Docker daemon depending on your OS."
+          eyebrow="05 · Seventeen systems"
+          title="Wrappers, harnesses, a machine runtime and its wraps, microVM runtimes, five full VMs, two control planes."
+          lede="nono, yolobox, sbx and discobox wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example, code-on-incus the packaged one, with nftables egress and a monitor that pauses or kills the box. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent. GhostVM, UTM, Lume and agent-sandbox-vm boot a macOS or Windows guest, for the jobs no Linux box can do. Cua Sandbox is the computer-use version: one machine the agent both codes in and clicks through, from a Docker container up to a Lume macOS guest. OpenShell is a policy gateway over Docker, Kubernetes or a microVM, and discobox is a box manager over a pool host that is a VM or a Docker daemon depending on your OS."
         >
           <SystemGrid />
         </Section>
@@ -61,7 +61,7 @@ function Home() {
           id="need"
           eyebrow="06 · System containers"
           title="When the agent needs a Linux machine, not a process."
-          lede="App containers (Docker, yolobox) isolate a process. System containers (Incus LXC) isolate a distro that still shares your kernel. Click a job. The Pere Villega setup is the canonical 'I wanted a laptop' case."
+          lede="App containers (Docker, yolobox) isolate a process. System containers (Incus LXC) isolate a distro that still shares your kernel. Click a job. The Pere Villega setup is the canonical 'I wanted a laptop' case; code-on-incus is the same case as a product."
         >
           <SystemNeed />
         </Section>
@@ -94,7 +94,7 @@ function Home() {
           id="mac"
           eyebrow="10 · Mac"
           title="Darwin is not a Linux kernel. Nested virt is the bill for pretending twice."
-          lede="Incus containers need Linux, so a Mac first boots a Linux VM — no nested virt. Incus --vm needs KVM inside that VM, so nested virt, M3+, macOS 15+. Two Apple Containers are two machines on Darwin, not two machines inside a machine — HVF does not live in the Linux guest. And a macOS agent is the opposite case: the sandbox is a macOS VM, capped at two running per Mac."
+          lede="Incus containers need Linux, so a Mac first boots a Linux VM — no nested virt. Incus --vm needs KVM inside that VM, so nested virt, M3+, macOS 15+. Two Apple Containers are two machines on Darwin, not two machines inside a machine — HVF does not live in the Linux guest. A macOS guest (GhostVM, UTM, Lume) is the one box that is not Linux at all: two per host, none nested."
         >
           <MacRuntime />
         </Section>
