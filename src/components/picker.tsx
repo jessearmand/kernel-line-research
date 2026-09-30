@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { SYSTEMS, type SystemId } from "@/lib/sandboxes";
+import { SYSTEMS, kernelLabel, type SystemId } from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Job = "wrap" | "embed" | "browser" | "pair" | "machine" | "mac" | "windows";
+type Job = "wrap" | "embed" | "browser" | "pair" | "machine" | "mac" | "windows" | "desktop" | "gpu";
 type Threat = "accident" | "hostile" | "tenant";
 type DockerNeed = "yes" | "no";
 type Where = "laptop" | "cloud" | "embed";
@@ -16,6 +16,8 @@ const JOBS: { id: Job; label: string; hint: string }[] = [
   { id: "pair", label: "Interactive pair-programming", hint: "Stay in the repo, don't wrap anything" },
   { id: "mac", label: "Agent needs macOS", hint: "Xcode, codesign, Simulator, Safari" },
   { id: "windows", label: "Agent needs Windows", hint: "MSVC, kernel debugging, a Windows desktop" },
+  { id: "desktop", label: "Computer-use agent", hint: "A Linux desktop: screenshots, clicks, a browser" },
+  { id: "gpu", label: "GPU or heavy compute", hint: "Local models, simulators, big builds" },
 ];
 
 const THREATS: { id: Threat; label: string; hint: string }[] = [
@@ -29,6 +31,41 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
   also: SystemId[];
   why: string;
 } {
+  if (job === "desktop") {
+    if (threat !== "accident" || where !== "laptop") {
+      return {
+        winner: "hypeman",
+        also: ["cua-sandbox", "microsandbox", "discobox"],
+        why: "A hostile page or a fleet of desktops wants a wall per session and fast restore. hypeman runs a VM per browser with snapshots and ingress; microsandbox is the embeddable sibling; Cua Sandbox is the rented version with a computer-use API. The wall is the smaller half of the job: also plan an egress allowlist, a fresh profile with no signed-in accounts, a human gate on consequential actions, and keeping the agent loop outside the box. Hosted desktops (E2B Desktop, Cua Fleets) sell the same shape if you would rather not run it.",
+      };
+    }
+    return {
+      winner: "discobox",
+      also: ["cua-sandbox", "incus", "hypeman"],
+      why: "On a laptop the useful parts are the desktop, the viewer and the audit trail. discobox ships an Xfce desktop and Chromium over noVNC in every box, a per-box proxy with audited requests, and credentials as sentinels. Its wall is its pool host, and on Linux by default that is your own Docker daemon, so keep sensitive logins off the machine and allowlist egress. Cua Sandbox is the computer-use-first alternative: a screenshot, click and type API over a Docker container, a QEMU VM or a Lume macOS guest. Anthropic's own computer-use demo is the same shape as discobox's: a container with X, VNC and Firefox.",
+    };
+  }
+  if (job === "gpu") {
+    if (where === "cloud") {
+      return {
+        winner: "openshell",
+        also: ["hypeman", "incus"],
+        why: "You are scheduling accelerators for other people. OpenShell takes GPUs through CDI on Docker and Podman, as a Kubernetes resource limit, or as one VFIO device on its VM driver, under one policy. Its default drivers share the host kernel, so use Kata or the VM driver for hostile tenants.",
+      };
+    }
+    if (threat !== "accident") {
+      return {
+        winner: "hypeman",
+        also: ["openshell", "incus"],
+        why: "A kernel wall around a GPU means a VMM that does VFIO passthrough. Firecracker and qemu-microvm cannot pass PCI, and hypeman's macOS backend refuses VFIO, so pick QEMU or Cloud Hypervisor on Linux. VFIO hands a whole GPU to one VM, so expect a density cost; NVIDIA vGPU slices a card across VMs, and wants QEMU.",
+      };
+    }
+    return {
+      winner: "yolobox",
+      also: ["incus", "docker-sbx"],
+      why: "For accidents, a container with the GPU passed in is the light path: yolobox passes host device nodes with --gpus. It shares the host kernel and driver stack. Incus has a gpu device for containers and VMs. sbx's GPU support is experimental VFIO, x86_64 Linux and NVIDIA only, whole card, feature-flagged, so it is not the laptop answer.",
+    };
+  }
   if (job === "mac") {
     const dockerNote =
       docker === "yes"
@@ -76,18 +113,25 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
       why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If the agent must drive a whole desktop rather than a Chromium, Cua Sandbox is the computer-use shape: shell, PTY and GUI actions on one machine, from a Docker container up to a Lume macOS guest, locally or from a Fleet pool. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
     };
   }
-  if (where === "cloud" && (job === "wrap" || job === "embed")) {
+  if (where === "cloud" && (job === "embed" || ((job === "wrap" || job === "pair") && threat !== "accident"))) {
     return {
       winner: "cloudflare",
-      also: threat === "tenant" ? ["hypeman", "microsandbox"] : ["hypeman", "docker-sbx"],
+      also: threat === "tenant" ? ["hypeman", "microsandbox"] : ["openshell", "hypeman", "docker-sbx"],
       why: "You want a fleet and you do not want to run a hypervisor. Cloudflare Sandbox is a Firecracker VM per sandbox ID, started from a Worker, with the credential-injecting egress proxy built in — the token stays in the Worker. Rootless Docker-in-Docker is documented for builds. hypeman if you would rather own the control plane, snapshots and GPU; sbx if the 'fleet' is actually one developer's laptop.",
+    };
+  }
+  if (where === "cloud" && (job === "wrap" || job === "pair")) {
+    return {
+      winner: "openshell",
+      also: ["hypeman", "docker-sbx"],
+      why: "You are governing a trusted team's agents, so the unit is a policy, not a box. If the code is hostile the wall matters more: Cloudflare Sandbox or hypeman. OpenShell puts one gateway with OIDC roles and per-team workspaces over Kubernetes, Docker or a microVM, keeps credentials on the trusted side, and lets an agent ask for more access that a human or the prover-gated auto-approve grants. Its kernel line is a driver choice: the default drivers share the host kernel, so pick the VM driver or Kata for hostile tenants.",
     };
   }
   if (job === "machine") {
     return {
       winner: "code-on-incus",
-      also: threat === "hostile" ? ["incus", "docker-sbx"] : ["incus", "yolobox", "docker-sbx"],
-      why: "You wanted a laptop, not a process. Incus system containers are that shape: systemd, apt, sudo, nested Docker, CoW clones. code-on-incus packages it — coi shell puts the agent in the box with nftables egress modes and a monitor that pauses on bulk reads and kills on a reverse shell. Plain Incus if you would rather script it yourself, as Pere Villega did. On a Mac the Linux VM is part of the pick: coi runs on Colima or Lima (MIT) as well as OrbStack, and OrbStack is closed source and free only for personal use, so an all-open-source stack is Incus on Colima with coi. Promote to sbx the moment the threat includes a kernel CVE — Incus LXC still shares the host kernel.",
+      also: threat === "hostile" ? ["incus", "docker-sbx"] : ["incus", "discobox", "yolobox", "docker-sbx"],
+      why: "You wanted a laptop, not a process. Incus system containers are that shape: systemd, apt, sudo, nested Docker, CoW clones. code-on-incus packages it — coi shell puts the agent in the box with nftables egress modes and a monitor that pauses on bulk reads and kills on a reverse shell. Plain Incus if you would rather script it yourself, as Pere Villega did. discobox is the other packaged version, aimed at several boxes on one repo with the work coming back as git commits. On a Mac the Linux VM is part of the pick: coi runs on Colima or Lima (MIT) as well as OrbStack, and OrbStack is closed source and free only for personal use, so an all-open-source stack is Incus on Colima with coi. Promote to sbx the moment the threat includes a kernel CVE — Incus LXC still shares the host kernel.",
     };
   }
   if (job === "embed") {
@@ -115,13 +159,13 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
   if (docker === "yes" || threat !== "accident") {
     return {
       winner: "docker-sbx",
-      also: threat === "accident" ? ["yolobox"] : ["microsandbox"],
+      also: threat === "accident" ? ["discobox", "yolobox"] : ["microsandbox", "openshell"],
       why: "Wrapping a YOLO CLI that must docker build is exactly why sbx exists: dedicated kernel, private daemon, proxy-injected secrets, live project mount. yolobox is the lighter accident fence if you do not need that engine and do not fear a kernel CVE.",
     };
   }
   return {
     winner: "nono",
-    also: ["yolobox", "claude-code"],
+    also: ["openshell", "yolobox", "claude-code"],
     why: "You want YOLO on a laptop, no nested Docker, defending against carelessness. nono wraps whichever CLI in Landlock/Seatbelt with a tighter box per tool and phantom secrets — zero image, zero VM. yolobox if you also need to hide $HOME behind a container rootfs. Promote to sbx or Incus the moment the agent needs a machine or an engine.",
   };
 }
@@ -219,7 +263,7 @@ export function Picker() {
           <Badge tone={winner.family === "microvm" || winner.family === "vm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
             {winner.family}
           </Badge>
-          <Badge>{winner.kernel === "mixed" ? "kernel per image" : `${winner.kernel} kernel`}</Badge>
+          <Badge>{kernelLabel(winner)}</Badge>
         </div>
         <p className="mt-5 text-sm leading-relaxed text-fg">{result.why}</p>
         {result.also.length ? (

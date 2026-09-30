@@ -18,7 +18,7 @@ export function StackExplorer() {
 
   const fam = FAMILIES.find((f) => f.id === family)!;
   const layer = fam.layers.find((l) => l.id === layerId) ?? fam.layers[fam.layers.length - 1];
-  const systems = FAMILY_SYSTEMS[family].map((id) => SYSTEMS.find((s) => s.id === id)!);
+  const members = FAMILY_SYSTEMS[family].map((m) => ({ ...m, system: SYSTEMS.find((s) => s.id === m.id)! }));
 
   const stopAt = useMemo(() => {
     if (family === "microvm" || family === "vm") return "guest-kernel";
@@ -107,24 +107,25 @@ export function StackExplorer() {
             <p className="mt-3 text-sm leading-relaxed text-muted">{layer.blurb}</p>
             <p className="mt-4 text-sm leading-relaxed text-fg">
               {family === "microvm"
-                ? "A kernel CVE inside the agent dies in the guest unless the VMM is also wrong. That is the MicroVM impact: you moved the trusted computing base from 'every syscall on this laptop' to 'this VMM plus the hypervisor'."
+                ? "A kernel CVE inside the agent dies in the guest unless the VMM is also wrong. That is the MicroVM impact: you moved the trusted computing base from 'every syscall on this laptop' to 'this VMM plus the hypervisor'. Systems marked with a setting are here only when configured that way: OpenShell's VM driver boots one guest per sandbox, and discobox gets a wall per box only when each box has its own libkrun pool, because boxes in one pool share its guest kernel."
                 : family === "vm"
                   ? "Same wall as a microVM, different guest: a whole macOS or Windows. A kernel CVE dies in the guest XNU or NT. What this row adds is the OS the agent's job needs — Xcode, codesign, MSVC — and what it costs is a desktop-class VM, Apple's two-guest cap, and every host-guest convenience you enable being a hole you chose."
                   : family === "system"
-                  ? "Unprivileged LXC maps container root to a high host uid, and AppArmor is on. That is a better accident story than stock Docker. The kernel is still this one. Pere Villega's Sandbox for Claude lives here: a machine, not a wall."
+                  ? "Unprivileged LXC maps container root to a high host uid, and AppArmor is on. That is a better accident story than stock Docker. The kernel is still this one. Pere Villega's Sandbox for Claude and discobox's boxes live here: a machine, not a wall. discobox's wall is its pool host, and on Linux by default that host is your own Docker daemon."
                   : "There is no second kernel. Namespaces, Seatbelt, and Landlock are all asking the same kernel that the attacker is already talking to. Isolation here is a policy, and policies have holes."}
             </p>
           </div>
           <div className="mt-8 border-t border-border pt-4">
             <p className="font-mono text-[11px] tracking-wide text-subtle uppercase">Lives here</p>
             <ul className="mt-3 flex flex-wrap gap-2">
-              {systems.map((s) => (
+              {members.map(({ system: s, via }) => (
                 <li key={s.id}>
                   <a
                     href={`#system-${s.id}`}
-                    className="inline-flex h-9 items-center rounded-full bg-surface px-3 text-sm text-fg hover:bg-bg"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full bg-surface px-3 text-sm text-fg hover:bg-bg"
                   >
                     {s.name}
+                    {via ? <span className="text-xs text-subtle">· {via}</span> : null}
                   </a>
                 </li>
               ))}

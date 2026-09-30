@@ -1,18 +1,21 @@
 # Kernel Line
 
-Interactive comparison of AI agent sandbox architectures: [yolobox](https://yolobox.dev), Docker sbx, microsandbox, Kernel hypeman, [Cloudflare Sandbox](https://developers.cloudflare.com/sandbox/), [GhostVM](https://ghostvm.org), [UTM](https://mac.getutm.app), [agent-sandbox-vm](https://github.com/glslang/agent-sandbox-vm), [Cua Sandbox](https://cua.ai/docs/concepts/how-sandboxes-work), [Lume](https://cua.ai/docs/concepts/how-lume-unattended-setup-works), Claude Code, Codex, [nono](https://nono.sh), Incus, and [code-on-incus](https://github.com/mensfeld/code-on-incus) — plus Mac runtimes (nested virt, Apple Container, macOS guests).
+Interactive comparison of AI agent sandbox architectures: [yolobox](https://yolobox.dev), Docker sbx, microsandbox, Kernel hypeman, [Cloudflare Sandbox](https://developers.cloudflare.com/sandbox/), [GhostVM](https://ghostvm.org), [UTM](https://mac.getutm.app), [agent-sandbox-vm](https://github.com/glslang/agent-sandbox-vm), [Cua Sandbox](https://cua.ai/docs/concepts/how-sandboxes-work), [Lume](https://cua.ai/docs/concepts/how-lume-unattended-setup-works), Claude Code, Codex, [nono](https://nono.sh), Incus, [code-on-incus](https://github.com/mensfeld/code-on-incus), NVIDIA [OpenShell](https://github.com/NVIDIA/OpenShell), and [discobox](https://github.com/discobox-ai/discobox) — plus Mac runtimes (nested virt, Apple Container, macOS guests).
 
 ## Run
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Then open the URL Vite prints (port 8080 in this workspace).
 
 ## What it covers
 
+- The kernel line as one layer of six: compute boundary, machine fidelity (OS, GPU, display), state and lifecycle, mediation (egress, credentials, approvals), work and data, observation and control
+- Workloads that change which layer breaks first: coding CLI, untrusted code, browser agent, Linux computer-use desktop, macOS/Windows app agent, GPU and heavy compute — with real reference setups (Anthropic's computer-use demo, E2B Desktop, Cua, Kernel browsers)
+- Threats beyond the kernel line: pixels as instructions, the signed-in session, the screen leaving the box, the irreversible click
 - Isolation stack: process sandbox vs app container vs system container vs microVM vs full VM (a macOS or Windows guest)
 - Harness compatibility (Claude Code, Codex, custom agents)
 - Threat model (kernel CVE, `rm -rf ~`, docker socket, two concurrent boxes)
@@ -22,6 +25,8 @@ Then open the URL Vite prints (port 8080 in this workspace).
 - Computer-use sandboxes: Cua Sandbox gives an agent one machine with a code half (shell, PTY, sandboxed Python) and a GUI half (screenshots, accessibility tree, clicks), spanning a Docker XFCE container, a QEMU Linux VM, a Lume macOS guest, Hyper-V Windows and the Android emulator; Lume is the headless Virtualization.framework runtime underneath — macOS from an IPSW with the Data volume patched offline for SSH and autologin, OCI push/pull of VM images, clone as the only checkpoint, SIP flipped through Recovery, Apple's two-guest cap
 - Threats beyond the kernel: reaching the host's localhost, persistence into the next session (git hooks, `.mcp.json`, Makefiles), and confused-deputy use of legitimately held credentials
 - Design axes the kernel line does not settle: where the harness sits (inside the box vs. commands-only), work isolation (live mount vs. `--clone` / worktree / golden image), and the credential-injecting proxy as the one wall that works on every family
+- Control planes that span families: OpenShell (one policy, credential and prover layer over Docker, Podman, Kubernetes or a libkrun microVM) and discobox (a pool host that is a VM or the host Docker daemon depending on OS), and why their row is a deployment choice rather than a product property
+- Policy verification (OpenShell's SMT prover), access-request loops as the new permission prompt, and git as the hand-back channel (discobox `apply`)
 - Off-axis primitives and hosted sandboxes: gVisor (Modal, Claude Code on the web historically) and its nvproxy GPU path, Firecracker-as-a-service (E2B, Vercel Sandbox, Cloudflare Sandbox), and why your host is usually already a VM
 - GPU as a matrix row: host device nodes (yolobox, Incus), experimental VFIO (Docker sbx: x86_64 Linux + NVIDIA, feature-flagged), VFIO or NVIDIA vGPU on QEMU / Cloud Hypervisor only (hypeman — Firecracker and the macOS backend cannot), paravirtualized Metal in macOS guests (GhostVM, Lume, UTM), and nothing at all in the rented rows
 - Subtraction vs addition: process sandboxes and app containers (nono, sandbox-runtime, fence, landrun, yolobox, Litterbox) fence your machine; system containers, microVMs and full VMs hand the agent a machine — most sharp edges on the site are one side borrowing the other's promise

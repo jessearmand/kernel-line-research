@@ -35,7 +35,7 @@ export function HarnessPanel() {
         {[
           {
             t: "Wrappers",
-            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy — as are sandbox-runtime, fence and landrun, the smaller wrappers this site folds into that row. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist, and Litterbox on Podman. sbx is a microVM with a private engine. In all of them the harness and its own API token live inside the box.",
+            d: "nono, yolobox, discobox, and Docker sbx launch someone else's CLI. nono is a process policy — as are sandbox-runtime, fence and landrun, the smaller wrappers this site folds into that row. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist, and Litterbox on Podman. sbx is a microVM with a private engine. In all of them the harness and its own API token live inside the box.",
           },
           {
             t: "Harness sandboxes",
@@ -43,11 +43,11 @@ export function HarnessPanel() {
           },
           {
             t: "System containers",
-            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones. code-on-incus is the wrap: coi shell puts Claude Code, Codex, opencode, pi or omp in the box, seeds that tool's credentials into it, and watches it with nftables and a threat monitor.",
+            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones. discobox is a second wrap of the same shape, with a pool, a per-box proxy and a git hand-back instead of a bind mount. code-on-incus is the wrap: coi shell puts Claude Code, Codex, opencode, pi or omp in the box, seeds that tool's credentials into it, and watches it with nftables and a threat monitor.",
           },
           {
             t: "Runtimes",
-            d: "microsandbox and hypeman run OCI as a VM on hardware you own. Cloudflare Sandbox runs it as a Firecracker VM on Cloudflare's, with your Worker as the control plane and the egress proxy. You image Claude Code or OpenCode into any of them; their native client is your code, not Anthropic's CLI.",
+            d: "microsandbox and hypeman run OCI as a VM on hardware you own. OpenShell is a control plane over runtimes like these: you image the agent, and it supplies policy, credentials and audit. Cloudflare Sandbox runs it as a Firecracker VM on Cloudflare's, with your Worker as the control plane and the egress proxy. You image Claude Code or OpenCode into any of them; their native client is your code, not Anthropic's CLI.",
           },
           {
             t: "Full VMs",

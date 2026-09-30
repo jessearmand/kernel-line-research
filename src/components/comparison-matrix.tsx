@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { MATRIX_ROWS, SYSTEMS, type SystemId } from "@/lib/sandboxes";
 import { cn } from "@/lib/utils";
 
-const GROUPS = ["Architecture", "Performance", "Security", "Harness"] as const;
+const GROUPS = ["Architecture", "Performance", "Environment", "Security", "Harness"] as const;
 
 export function ComparisonMatrix() {
   const [group, setGroup] = useState<(typeof GROUPS)[number]>("Architecture");
