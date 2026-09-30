@@ -10,7 +10,9 @@ export type SystemId =
   | "claude-code"
   | "codex"
   | "nono"
-  | "incus";
+  | "incus"
+  | "openshell"
+  | "discobox";
 
 export type System = {
   id: SystemId;
@@ -488,6 +490,106 @@ export const SYSTEMS: System[] = [
       { label: "github.com/nolabs-ai/nono", href: "https://github.com/nolabs-ai/nono" },
     ],
   },
+  {
+    id: "openshell",
+    name: "OpenShell",
+    short: "Policy gateway over Docker · K8s · microVM",
+    maker: "NVIDIA",
+    family: "container",
+    familyNote:
+      "A control plane, not one primitive. A gateway owns policy, providers and identity; a compute driver builds the boundary — Docker, Podman, a Kubernetes pod (Kata via runtimeClass if you ask), or a libkrun microVM. The same supervisor and policy engine run over all of them, so the kernel line is a driver setting: shared on Docker, Podman and Kubernetes, dedicated on the VM driver. Inside, a capability-free non-root workload gets Landlock, seccomp and a network namespace whose only exit is a supervisor that sits on the trusted side and holds the real credentials.",
+    oneLiner:
+      "Declare what each agent may touch in a policy. A supervisor outside the workload enforces it, injects credentials only at approved endpoints, and a prover checks policy changes before they apply.",
+    role: "runtime",
+    vmm: "Driver-chosen: none (Docker, Podman, K8s) · libkrun on KVM / Apple Hypervisor (VM driver) · Kata via runtimeClass",
+    kernel: "shared",
+    openSource: "Apache-2.0",
+    platforms: "Linux x86_64 / arm64; macOS Apple Silicon via Docker Desktop; Windows WSL 2 (experimental). Native Windows via MXC: announced, not shipped.",
+    startup: "Container or pod start plus a supervisor handshake; the agent is held until the boundary is confirmed. MicroVM boot on the VM driver.",
+    overhead: "A gateway, a supervisor per sandbox, and a proxy. Container-weight on Docker/Podman; VM-weight (vcpus, mem_mib) on the VM driver.",
+    workspace: "A private sandbox filesystem: image, `sandbox upload` / download, named volumes. Bind-mounting a host path is an explicit opt-in that turns off resource admission, and the docs warn it can bypass filesystem policy.",
+    network: "Deny-by-default. The only exit is the supervisor: no NIC in the VM driver, networking off on the Docker container, NetworkPolicy on Kubernetes (your CNI must enforce it). Rules are per host, port and calling binary, with optional L7 for REST, GraphQL and WebSocket. Loopback, link-local and metadata addresses are always blocked.",
+    nestedDocker: "Not a documented workflow. The workload runs non-root with no Linux capabilities and no docker.sock; the gateway, not the agent, holds the runtime socket. Safe by absence, not a feature.",
+    harness: "Any CLI you put in the image. The docs cover Claude Code, OpenCode, Codex and Copilot CLI (the quickstart runs OpenCode). Python, TypeScript, Go and Rust SDKs drive the gateway; NVIDIA's NemoClaw is a blueprint on top.",
+    useCases: [
+      "Governed fleets: many agents behind one gateway, OIDC roles and per-team workspaces, Helm on Kubernetes",
+      "Credentials that work only at approved endpoints and only for the named binary: gh gets the GitHub token, nothing else does",
+      "Agents that ask for more access at runtime: the advisor proposes a rule, a human (or the prover-gated auto-approve) accepts it, no restart",
+      "Verifiable delegation: a boundary check proves a subagent's policy stays inside its parent's maximum",
+    ],
+    notFor: [
+      "Untrusted code on the Docker, Podman or default Kubernetes drivers — the kernel is still the host's",
+      "An agent that needs apt, systemd or a nested Docker engine",
+      "A ten-minute wrap of one CLI where a gateway is more machinery than the threat",
+    ],
+    security:
+      "Two layers that do not depend on each other: the runtime boundary the driver builds, and the mediation the supervisor applies. The workload holds no gateway token and no provider credential; if the supervisor drops, the sandbox freezes the agent. Binary identity is SHA-256 pinned on first use. Filesystem and process controls are fixed at creation; network and provider bindings change live. The prover uses an SMT solver and only covers the policy features its model represents.",
+    caveats: [
+      "Kernel line depends on the driver: only the VM driver or a Kata runtimeClass gives a dedicated kernel",
+      "The VM driver's own README says Experimental while the support matrix lists MicroVM as supported — read both",
+      "Landlock baseline needs Linux 6.2+ (ABI 3); startup fails rather than degrade",
+      "L7 rules default to audit: they log but do not block until you set enforce. Endpoints with no request rules allow any method and path",
+      "The gateway holds the runtime socket on the Docker driver — it is the trusted component to protect",
+      "Docker Desktop needs host networking and no Enhanced Container Isolation; WSL 2 is experimental",
+    ],
+    scores: { isolation: 3, performance: 4, harnessFit: 4, untrustedCode: 3, laptopDx: 3 },
+    layers: ["hw", "host-kernel", "ns", "rootfs", "agent"],
+    sources: [
+      { label: "OpenShell architecture", href: "https://docs.nvidia.com/openshell/latest/about/architecture" },
+      { label: "github.com/NVIDIA/OpenShell", href: "https://github.com/NVIDIA/OpenShell" },
+      { label: "RFC 0012: isolation backend", href: "https://github.com/NVIDIA/OpenShell/blob/main/rfc/0012-isolation-backend/README.md" },
+    ],
+  },
+  {
+    id: "discobox",
+    name: "discobox",
+    short: "Parallel agent boxes, git as the sync layer",
+    maker: "discobox-ai",
+    family: "system",
+    familyNote:
+      "yolobox's workflow (wrap Claude Code, Codex or OpenCode, passwordless sudo) with Incus's shape: each box is a systemd Linux container with nested Docker, a desktop and a browser. The difference is the pool. Boxes live inside a pool, which is one runtime host, and boxes in a pool share its kernel by design — the project's own ADR says mutually untrusted work belongs in different pools. The pool host is the kernel line, and it depends on the OS: a Virtualization.framework VM on macOS, a WSL Containers VM on Windows, the host's own Docker daemon on Linux by default, or a libkrun microVM or cloud VM if you opt in.",
+    oneLiner:
+      "Give each agent session its own box with its own clone of the repo, and get the work back as ordinary git commits.",
+    role: "wrapper",
+    vmm: "Per pool: Virtualization.framework (macOS) · WSL Containers (Windows) · host Docker daemon (Linux default) · libkrun / KVM, cloud VM, Kata (opt-in)",
+    kernel: "shared",
+    openSource: "Apache-2.0",
+    platforms: "macOS, Linux, Windows. The client installs with brew or a script; the server is downloaded on first use.",
+    startup: "The first pool fetches a guest image and boots a VM or daemon; later boxes start inside a warm pool. Idle boxes stop themselves when their terminals go quiet.",
+    overhead: "One pool VM or daemon, then a full-OS container per box, with a pool-wide BuildKit cache.",
+    workspace: "Not a mount. The box clones your repo at the commit you have checked out, and origin inside is read-only. `discobox apply` cherry-picks committed work back in a scratch worktree, all-or-nothing; or push a PR from inside the box.",
+    network: "Boxes sit on an internal network whose only exit is the pool's MITM proxy: a per-box mTLS identity, destination policy, DNS through the pool, and an audit row per request. Every allowed CONNECT is intercepted; there is no passthrough tunnel.",
+    nestedDocker: "Yes. dockerd runs in the box, builds go through the pool's BuildKit, and a runc wrapper puts the proxy CA into every nested container so their egress stays on the same proxy.",
+    harness: "Claude Code, Codex and OpenCode ship as harness images; other terminal agents can be packaged into one. VS Code or Zed over SSH, a VNC desktop, and an OpenAPI / CLI surface for automation.",
+    useCases: [
+      "Several agent sessions on one repository at once, each in its own box, while your own checkout stays yours",
+      "Agents that need a full machine plus a desktop, a browser and nested Docker",
+      "Credentials the agent requests and a human grants for a host scope and an expiry; the real value never enters the box",
+      "Designed, not confirmed shipped: a sandbox that is itself a macOS or Windows VM, for work that only runs there (ADR 0144, 0145)",
+    ],
+    notFor: [
+      "Hostile code on Linux with the default provider — the pool is the host's Docker daemon and box containers are created privileged",
+      "Hostile tenants inside one pool — by its own design they share a kernel",
+      "Embedding as a library in your own product",
+    ],
+    security:
+      "Egress and credentials are the real controls: per-box mTLS identity, audited MITM, ephemeral sentinels bound to a host and a five-minute window, human grants with an expiry, and control-plane checks that never trust the box. An LLM judge compares a credential-bearing command to the English grant, but it runs inside the box, so the project itself calls it a guardrail, not a boundary. Kernel isolation is whatever the pool host is: a VM on macOS and Windows, the host on the Linux default.",
+    caveats: [
+      "Linux default provider is `docker`: the pool agent and its sibling boxes run on the host daemon. libkrun is opt-in and needs /dev/kvm",
+      "Box containers are created privileged (systemd, nested Docker); the rootless / userns default in ADR 0004 is still marked Proposed",
+      "Boxes in one pool share a kernel, a proxy and a BuildKit",
+      "Under active development; every release starts as a prerelease",
+      "The judge is a guardrail inside the box, not a trust boundary",
+    ],
+    scores: { isolation: 3, performance: 3, harnessFit: 4, untrustedCode: 2, laptopDx: 4 },
+    layers: ["hw", "host-kernel", "lxc", "distro", "nested", "agent"],
+    sources: [
+      { label: "github.com/discobox-ai/discobox", href: "https://github.com/discobox-ai/discobox" },
+      { label: "ADR 0003: the pool", href: "https://github.com/discobox-ai/discobox/blob/main/docs/adr/0003-promote-pool-to-a-first-class-primitive.md" },
+      { label: "ADR 0004: userns isolation profiles", href: "https://github.com/discobox-ai/discobox/blob/main/docs/adr/0004-user-namespaces-are-the-default-isolation.md" },
+      { label: "ADR 0079: the local judge", href: "https://github.com/discobox-ai/discobox/blob/main/docs/adr/0079-a-local-judge-gates-every-wrapped-credential-use.md" },
+    ],
+  },
 ];
 
 export const THREATS: Threat[] = [
@@ -505,6 +607,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "contained", note: "workspace-write cannot touch $HOME. danger-full-access can. Cloud clone never saw your home." },
       nono: { verdict: "contained", note: "Home is outside the grant unless the profile added it. A tool sandbox cannot widen that grant from inside." },
       incus: { verdict: "contained", note: "The instance has its own rootfs. Host $HOME appears only if you bind-mounted it (Pere Villega's default is that you did not)." },
+      openshell: { verdict: "contained", note: "Landlock leaves only listed paths writable, system paths are read-only, and the sandbox has its own rootfs. Host home appears only through an admission-disabled bind mount." },
+      discobox: { verdict: "contained", note: "The box has its own filesystem and a clone of the repo. Nothing of your $HOME is mounted." },
     },
   },
   {
@@ -521,6 +625,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local CLI: host kernel, exposed. Cloud task: contained in OpenAI's isolated environment." },
       nono: { verdict: "exposed", note: "Landlock and Seatbelt are still this kernel. no daemon, no VM — and no second kernel." },
       incus: { verdict: "exposed", note: "System containers share the host kernel. Unprivileged uid maps soften an escape-to-root; they do not stop a kernel LPE. Incus --vm would contain this; that is not this row." },
+      openshell: { verdict: "partial", note: "Docker, Podman and K8s drivers: exposed — Landlock and seccomp are this kernel. VM driver or a Kata runtimeClass: contained. The driver decides, not the product." },
+      discobox: { verdict: "partial", note: "The pool host decides. macOS and Windows pools contain it to the pool VM, which holds every box in that pool. On Linux the default pool is the host Docker daemon: exposed. Boxes in one pool lose together." },
     },
   },
   {
@@ -537,6 +643,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local: same socket class if present. Cloud: not your daemon." },
       nono: { verdict: "partial", note: "Deny the socket in the profile and it is closed. Allow docker or mount the socket and it is the same hole as Claude Code." },
       incus: { verdict: "contained", note: "The point of security.nesting: a dockerd inside the instance, not /var/run/docker.sock on the host." },
+      openshell: { verdict: "contained", note: "The workload has no capabilities and no runtime socket; the gateway holds it, so the gateway is what you protect." },
+      discobox: { verdict: "partial", note: "The host socket goes to the pool agent, not the box, and the box runs its own dockerd. On the Linux default the box is a privileged container on that same daemon, so no-socket is policy, not a wall." },
     },
   },
   {
@@ -553,6 +661,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "contained", note: "Default-deny network is the winning control. Local still sees the workspace. Cloud sees only the clone." },
       nono: { verdict: "contained", note: "Phantom tokens: the child never holds GH_TOKEN. The proxy injects the real secret at the boundary and zeroises it. Workspace .env is still your problem." },
       incus: { verdict: "partial", note: "Host creds stay out unless you passed them in. Egress is whatever the instance's nic can reach — Incus is not a secret proxy." },
+      openshell: { verdict: "contained", note: "Providers keep credentials in the gateway. The sandbox holds placeholders and the supervisor injects the real value only on requests to approved endpoints from approved binaries, with SSRF and metadata blocked. Workspace .env is still yours." },
+      discobox: { verdict: "contained", note: "Managed credentials are sentinels; the proxy swaps the real value only for its bound host, under grants that expire. The judge inside the box is a guardrail only. Anything you put in the clone is visible." },
     },
   },
   {
@@ -569,6 +679,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local workspace-write: exposed. Cloud clone: the laptop copy survives; you review a PR." },
       nono: { verdict: "exposed", note: "The grant is the worktree. Tool sandboxes do not snapshot your git history." },
       incus: { verdict: "partial", note: "On a golden-image clone the laptop repo is safe until you bind-mounted it. Pere Villega bind-mounts the project — then a wipe is real, like yolobox." },
+      openshell: { verdict: "partial", note: "The default is a private copy or volume, not your checkout. A bind mount is possible and documented as bypassing workspace isolation. What you download back is a diff to read." },
+      discobox: { verdict: "contained", note: "Your checkout is never mounted. The box clones it, origin is read-only, and nothing lands until you run apply, which cherry-picks only committed work, all-or-nothing." },
     },
   },
   {
@@ -585,6 +697,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local: host Docker, same tension. Cloud: only if the environment image provides an engine." },
       nono: { verdict: "exposed", note: "Wraps the CLI, does not give it an engine. Compose means the host Docker or a denied socket." },
       incus: { verdict: "contained", note: "This is a primary Incus use case. Nested dockerd in the system container; host socket stays off. Heavier than sbx, cheaper than a dedicated kernel." },
+      openshell: { verdict: "partial", note: "Not a documented workflow. No capabilities and no docker.sock: safe, but not a feature. An image with its own engine would be yours to build." },
+      discobox: { verdict: "partial", note: "A primary use: dockerd in the box, builds through the pool BuildKit, and a runc wrapper carries the proxy CA into nested containers. No host socket, but the wall behind it is only as strong as the pool host." },
     },
   },
   {
@@ -601,6 +715,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Local: no. Cloud: OpenAI is the multi-tenant operator, not you." },
       nono: { verdict: "exposed", note: "A laptop wrapper. Shared kernel, one operator." },
       incus: { verdict: "partial", note: "This is what Incus clustering and unprivileged LXC are for — dense tenancy on Linux. Still the host kernel. Hostile tenants that need a kernel wall want --vm or a microVM." },
+      openshell: { verdict: "partial", note: "Built for it above the kernel: OIDC roles, per-workspace resources, one JWT per sandbox generation. The kernel is still shared on Docker, Podman and default K8s; hostile tenants want the VM driver or Kata." },
+      discobox: { verdict: "partial", note: "By its own design boxes in one pool share a kernel and mutually untrusted work belongs in different pools. A pool per tenant fixes it, at the price of a host each." },
     },
   },
   {
@@ -641,6 +757,8 @@ export const THREATS: Threat[] = [
         verdict: "contained",
         note: "Many system containers per host is the design. Pere Villega's `sandbox backend frontend --claude` is two Incus boxes in tmux, each with its own Docker. On a Mac they still share the one Colima/OrbStack Linux VM.",
       },
+      openshell: { verdict: "contained", note: "Each sandbox has its own supervisor identity and network fence, many per gateway. On a Mac with Docker Desktop they share one Linux VM; with the VM driver each is its own VM." },
+      discobox: { verdict: "contained", note: "The headline use: many boxes, each its own clone, services and Docker, never seeing each other. In one pool they share its kernel, and on a Mac that pool is one VM." },
     },
   },
   {
@@ -657,6 +775,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "contained", note: "Local sandbox blocks network at the syscall level; localhost is off with everything else until you enable network. Cloud tasks have no route to your laptop at all." },
       nono: { verdict: "partial", note: "The L7 proxy and Landlock TCP rules can deny localhost; whether they do is the profile. A permissive profile leaves the host's ports open." },
       incus: { verdict: "partial", note: "Own network namespace on an Incus bridge. 127.0.0.1-bound host services are unreachable; anything bound on the bridge or 0.0.0.0 is not. Same shape as yolobox." },
+      openshell: { verdict: "contained", note: "Loopback, link-local and unspecified addresses are always blocked and cannot be allowlisted. Private ranges need an exact declared host or allowed_ips. The workload's only way out is the supervisor." },
+      discobox: { verdict: "partial", note: "The only exit is the pool proxy, which applies destination policy and audits every request. Whether private ranges are denied by default is policy I did not verify." },
     },
   },
   {
@@ -673,6 +793,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: ".git and .codex are read-only in workspace-write, so hooks are covered. Anything else in the tree is fair game. Cloud: the plant arrives as a PR you review." },
       nono: { verdict: "partial", note: "The grant is the tree; deny .git/hooks and dotfiles in the profile and it is closed. The default profile is what you audit." },
       incus: { verdict: "partial", note: "Golden-image clone: the plant dies with the box. Bind-mounted project (the Villega default): live mount, same as yolobox." },
+      openshell: { verdict: "partial", note: "The default is a private copy, so a planted hook never reaches your checkout until you sync it back. System paths are read-only under Landlock; the workspace is writable, so what you download is yours to read." },
+      discobox: { verdict: "contained", note: "Hooks live in the box's own clone and never travel: apply moves commits, not .git/hooks. A committed Makefile or package.json change arrives as a commit you can read." },
     },
   },
   {
@@ -689,6 +811,8 @@ export const THREATS: Threat[] = [
       codex: { verdict: "partial", note: "Approvals gate the command locally. Cloud comes back as a PR: the strongest shape, because a human sees the diff before it lands." },
       nono: { verdict: "partial", note: "The best of the wrappers: gh gets the token only inside its own child sandbox, and the L7 policy can allow read-PR while denying push. The policy is still yours to write." },
       incus: { verdict: "exposed", note: "Whatever you put in the machine is the machine's. Incus has no credential proxy." },
+      openshell: { verdict: "partial", note: "The same shape as nono with more machinery: per-binary, per-endpoint credentials, L7 method and path rules (read a PR, deny push), operator approval for new access, and a prover that blocks auto-approval of new credentialed reach. Policy is still yours to write, and L7 rules only log until you enforce." },
+      discobox: { verdict: "partial", note: "Credentials are requested, granted by a human for a host and an expiry, and used as sentinels; a judge compares the command to the English grant. The judge runs in the box, so it is a guardrail. Grant scope bounds the damage." },
     },
   },
 ];
@@ -714,6 +838,8 @@ export const HARNESSES = [
       codex: "—",
       nono: "Wrap + signed profile",
       incus: "Install inside the machine",
+      openshell: "Install in the image + a provider profile",
+      discobox: "Harness image",
     } as Record<SystemId, string>,
   },
   {
@@ -728,6 +854,8 @@ export const HARNESSES = [
       codex: "Native",
       nono: "Wrap + signed profile",
       incus: "Install inside the machine",
+      openshell: "Install in the image + a provider profile",
+      discobox: "Harness image",
     } as Record<SystemId, string>,
   },
   {
@@ -742,6 +870,8 @@ export const HARNESSES = [
       codex: "—",
       nono: "Wrap + signed profile",
       incus: "Install inside the machine",
+      openshell: "Copilot CLI documented; others by image",
+      discobox: "Package it in an image",
     } as Record<SystemId, string>,
   },
   {
@@ -756,6 +886,8 @@ export const HARNESSES = [
       codex: "—",
       nono: "Wrap + signed profile",
       incus: "Install inside the machine",
+      openshell: "The quickstart agent",
+      discobox: "Harness image",
     } as Record<SystemId, string>,
   },
   {
@@ -770,6 +902,8 @@ export const HARNESSES = [
       codex: "No",
       nono: "Any CLI via a profile",
       incus: "OCI or a full distro",
+      openshell: "Any process; SDKs drive the gateway",
+      discobox: "Package an image; drive via OpenAPI / CLI",
     } as Record<SystemId, string>,
   },
   {
@@ -784,6 +918,8 @@ export const HARNESSES = [
       codex: "Not this product",
       nono: "No",
       incus: "If you image a browser into the machine",
+      openshell: "Not a documented path",
+      discobox: "Desktop + Chromium in the box (VNC)",
     } as Record<SystemId, string>,
   },
 ];
@@ -807,6 +943,8 @@ export const MATRIX_ROWS: {
       codex: "Seatbelt + bwrap / Landlock",
       nono: "Landlock + Seatbelt + tool broker",
       incus: "Unprivileged LXC",
+      openshell: "Landlock + seccomp + netns, in a container, pod or libkrun VM",
+      discobox: "systemd container inside a pool (VM or host daemon)",
     },
   },
   {
@@ -822,6 +960,8 @@ export const MATRIX_ROWS: {
       codex: "Shared locally; isolated in cloud",
       nono: "Shared host",
       incus: "Shared host (LXC). Dedicated if --vm",
+      openshell: "Shared (Docker, Podman, K8s). Dedicated with the VM driver or Kata",
+      discobox: "Shared with its pool. Pool = VM on macOS / Windows, the host on Linux default",
     },
   },
   {
@@ -837,6 +977,8 @@ export const MATRIX_ROWS: {
       codex: "Harness (built-in)",
       nono: "Agent wrapper",
       incus: "Machine runtime",
+      openshell: "Policy control plane",
+      discobox: "Agent wrapper + box manager",
     },
   },
   {
@@ -852,6 +994,8 @@ export const MATRIX_ROWS: {
       codex: "None locally; OpenAI cloud for app",
       nono: "None (child process + proxy)",
       incus: "incusd on Linux",
+      openshell: "Gateway (gRPC, OIDC, Helm) + a supervisor per sandbox",
+      discobox: "discobox-server + a pool-agent per pool",
     },
   },
   {
@@ -867,6 +1011,8 @@ export const MATRIX_ROWS: {
       codex: "Harness outside; commands inside (local). Everything inside (cloud)",
       nono: "Supervisor outside; agent session + each tool child inside",
       incus: "Whole CLI inside the machine",
+      openshell: "Agent inside; supervisor and credentials outside",
+      discobox: "Whole CLI inside; credentials arrive as sentinels via the pool proxy",
     },
   },
   {
@@ -882,6 +1028,8 @@ export const MATRIX_ROWS: {
       codex: "Spawn / cloud provision",
       nono: "Process spawn",
       incus: "Launch, or ms CoW clone",
+      openshell: "Container / pod start; VM boot on the VM driver",
+      discobox: "Pool boots once, then box start; idle boxes self-stop",
     },
   },
   {
@@ -897,6 +1045,8 @@ export const MATRIX_ROWS: {
       codex: "Policy / ephemeral machine",
       nono: "Policy only",
       incus: "A full OS, no hypervisor",
+      openshell: "Container-weight; VM-weight on the VM driver",
+      discobox: "A pool VM or daemon plus a full-OS container per box",
     },
   },
   {
@@ -912,6 +1062,8 @@ export const MATRIX_ROWS: {
       codex: "MAC policy; cloud machine",
       nono: "MAC policy on session + each tool",
       incus: "User ns + AppArmor; still this kernel",
+      openshell: "Driver boundary + Landlock / seccomp + supervisor-mediated egress",
+      discobox: "Pool host + per-box proxy identity. Boxes share the pool kernel",
     },
   },
   {
@@ -927,6 +1079,8 @@ export const MATRIX_ROWS: {
       codex: "Local: live tree, .git read-only. Cloud: clone → PR",
       nono: "Live grant",
       incus: "Golden-image CoW clone, or bind-mount",
+      openshell: "Private copy or volume; upload / download; bind mount is opt-in",
+      discobox: "Own git clone; origin read-only; `apply` cherry-picks commits back",
     },
   },
   {
@@ -942,6 +1096,8 @@ export const MATRIX_ROWS: {
       codex: "Off",
       nono: "L7 proxy, phantom tokens",
       incus: "Bridged nic",
+      openshell: "Deny-by-default per host / port / binary, L7 optional, metadata blocked",
+      discobox: "Internal net → pool MITM proxy (mTLS per box, audited)",
     },
   },
   {
@@ -957,6 +1113,8 @@ export const MATRIX_ROWS: {
       codex: "Is the CLI",
       nono: "Wraps the CLI",
       incus: "Install it in the machine",
+      openshell: "Install it in the image; policy is the fence",
+      discobox: "Claude Code, Codex, OpenCode as harness images",
     },
   },
   {
@@ -972,6 +1130,8 @@ export const MATRIX_ROWS: {
       codex: "No",
       nono: "No — wrap, don't embed",
       incus: "REST API + CLI",
+      openshell: "Python · TypeScript · Go · Rust SDKs + gRPC",
+      discobox: "OpenAPI + CLI. Not an embeddable library",
     },
   },
 ];
@@ -982,9 +1142,9 @@ export function systemById(id: SystemId) {
 
 export const FAMILY_SYSTEMS: Record<Family, SystemId[]> = {
   process: ["claude-code", "codex", "nono"],
-  container: ["yolobox"],
-  system: ["incus"],
-  microvm: ["docker-sbx", "microsandbox", "hypeman"],
+  container: ["yolobox", "openshell"],
+  system: ["incus", "discobox"],
+  microvm: ["docker-sbx", "microsandbox", "hypeman", "openshell", "discobox"],
 };
 
 export const SYSTEM_CONTAINER_CASES: {
@@ -1008,6 +1168,19 @@ export const SYSTEM_CONTAINER_CASES: {
     sources: [
       { label: "I built yet another sandbox", href: "https://perevillega.com/posts/2026-03-03-ai-sandbox-coding-agents/" },
       { label: "pvillega/sandbox-claude", href: "https://github.com/pvillega/sandbox-claude" },
+    ],
+  },
+  {
+    id: "discobox",
+    title: "discobox · one repo, many parallel boxes",
+    verdict: "need",
+    need: "Several agent sessions on one repository, each needing a real machine: systemd, sudo, nested Docker, a desktop and a browser. Every box clones the repo and its origin is read-only. `discobox apply` cherry-picks the commits back, or the box pushes a PR. Credentials arrive as sentinels through a per-box mTLS proxy.",
+    vsDocker: "yolobox is one box on your checkout. discobox is N boxes on N clones, each with its own services, ports and Docker, so parallel agents stop fighting over a branch and a port.",
+    vsMicrovm: "sbx gives one VM per session. discobox amortises: one VM per pool (macOS, Windows, or opt-in libkrun), many system containers inside it, sharing that kernel on purpose. On Linux the default pool is the host Docker daemon, so the kernel wall only arrives when you opt into a libkrun or Kata pool.",
+    vsProcess: "nono, Claude and Codex wrap a bash child. discobox gives the agent the whole machine and moves the boundary to the network and to git.",
+    sources: [
+      { label: "github.com/discobox-ai/discobox", href: "https://github.com/discobox-ai/discobox" },
+      { label: "ADR 0003: the pool", href: "https://github.com/discobox-ai/discobox/blob/main/docs/adr/0003-promote-pool-to-a-first-class-primitive.md" },
     ],
   },
   {

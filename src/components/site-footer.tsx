@@ -65,6 +65,16 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
+            <a className="hover:text-fg" href="https://github.com/NVIDIA/OpenShell">
+              NVIDIA OpenShell · docs.nvidia.com/openshell · RFC 0012 isolation backend
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://github.com/discobox-ai/discobox">
+              discobox-ai/discobox · DESIGN.md · ADR 0003, 0004, 0079
+            </a>
+          </li>
+          <li>
             <a className="hover:text-fg" href="https://gvisor.dev/">
               gVisor · Modal sandbox security · Vercel Sandbox concepts (Firecracker)
             </a>
@@ -74,7 +84,8 @@ export function SiteFooter() {
           Scores are relative and qualitative. Startup numbers are vendor-reported or typical of
           the primitive, not a benchmark we ran. Cloud Codex and Claude Code on the web are
           different boxes from the local CLIs — the app treats each as two surfaces of one
-          product. The Claude Code on the web observation (Firecracker guest kernel, vsock init,
+          product. OpenShell (commit 5acaaba) and discobox (commit 4a7f956) were read from source and
+          design records in Sep 2026, not run; both are moving fast. The Claude Code on the web observation (Firecracker guest kernel, vsock init,
           host-local connections blocked, credential proxy) was taken from inside one such session
           in Sep 2026 and may change.
         </p>

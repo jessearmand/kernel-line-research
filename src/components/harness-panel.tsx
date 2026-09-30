@@ -35,7 +35,7 @@ export function HarnessPanel() {
         {[
           {
             t: "Wrappers",
-            d: "nono, yolobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist. sbx is a microVM with a private engine. In all three the harness and its own API token live inside the box.",
+            d: "nono, yolobox, discobox, and Docker sbx launch someone else's CLI. nono is a process policy. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist. sbx is a microVM with a private engine. In all three the harness and its own API token live inside the box.",
           },
           {
             t: "Harness sandboxes",
@@ -43,11 +43,11 @@ export function HarnessPanel() {
           },
           {
             t: "System containers",
-            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones.",
+            d: "Incus is not a wrap. You install the agent inside a full Linux machine. Pere Villega's Sandbox for Claude is that pattern: one Incus box per project, nested Docker, CoW clones. discobox packages the same shape as harness images and adds a pool, a proxy and a git-based hand-back.",
           },
           {
             t: "Runtimes",
-            d: "microsandbox and hypeman run OCI as a VM. You image Claude into them if you want; their native client is your code, not Anthropic's CLI.",
+            d: "microsandbox and hypeman run OCI as a VM. You image Claude into them if you want; their native client is your code, not Anthropic's CLI. OpenShell is a control plane over runtimes like these: you image the agent, then it supplies the policy, credentials and audit.",
           },
         ].map((x) => (
           <article key={x.t} className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">

@@ -107,9 +107,9 @@ export function StackExplorer() {
             <p className="mt-3 text-sm leading-relaxed text-muted">{layer.blurb}</p>
             <p className="mt-4 text-sm leading-relaxed text-fg">
               {family === "microvm"
-                ? "A kernel CVE inside the agent dies in the guest unless the VMM is also wrong. That is the MicroVM impact: you moved the trusted computing base from 'every syscall on this laptop' to 'this VMM plus the hypervisor'."
+                ? "A kernel CVE inside the agent dies in the guest unless the VMM is also wrong. That is the MicroVM impact: you moved the trusted computing base from 'every syscall on this laptop' to 'this VMM plus the hypervisor'. OpenShell (VM driver) and discobox (macOS, Windows or libkrun pools) appear here as deployments, not identities: the driver or pool host picks the row, and discobox boxes in one pool still share that guest kernel."
                 : family === "system"
-                  ? "Unprivileged LXC maps container root to a high host uid, and AppArmor is on. That is a better accident story than stock Docker. The kernel is still this one. Pere Villega's Sandbox for Claude lives here: a machine, not a wall."
+                  ? "Unprivileged LXC maps container root to a high host uid, and AppArmor is on. That is a better accident story than stock Docker. The kernel is still this one. Pere Villega's Sandbox for Claude and discobox's boxes live here: a machine, not a wall. discobox's wall is its pool host, and on Linux by default that host is your own Docker daemon."
                   : "There is no second kernel. Namespaces, Seatbelt, and Landlock are all asking the same kernel that the attacker is already talking to. Isolation here is a policy, and policies have holes."}
             </p>
           </div>

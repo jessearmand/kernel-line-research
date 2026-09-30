@@ -32,9 +32,9 @@ function Home() {
         </Section>
         <Section
           id="systems"
-          eyebrow="03 · Eight systems"
-          title="Wrappers, harnesses, a machine runtime, two VM runtimes."
-          lede="nono, yolobox and sbx wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are general VM runtimes."
+          eyebrow="03 · Ten systems"
+          title="Wrappers, harnesses, a machine runtime, two VM runtimes, two control planes."
+          lede="nono, yolobox, sbx and discobox wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example. microsandbox and hypeman are general VM runtimes. OpenShell is a policy gateway over Docker, Kubernetes or a microVM, and discobox is a box manager over a pool host that is a VM or a Docker daemon depending on your OS."
         >
           <SystemGrid />
         </Section>

@@ -34,11 +34,18 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
       why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
     };
   }
+  if (where === "cloud" && (job === "wrap" || job === "pair")) {
+    return {
+      winner: "openshell",
+      also: ["hypeman", "docker-sbx"],
+      why: "You are governing agents for other people, so the unit is a policy, not a box. OpenShell puts one gateway with OIDC roles and per-team workspaces over Kubernetes, Docker or a microVM, keeps credentials on the trusted side, and lets an agent ask for more access that a human or the prover-gated auto-approve grants. Its kernel line is a driver choice: the default drivers share the host kernel, so pick the VM driver or Kata for hostile tenants.",
+    };
+  }
   if (job === "machine") {
     return {
       winner: "incus",
-      also: threat === "hostile" ? ["docker-sbx"] : ["yolobox", "docker-sbx"],
-      why: "You wanted a laptop, not a process. Incus system containers are that shape: systemd, apt, sudo, nested Docker, CoW clones. Pere Villega's Sandbox for Claude is the worked example. Promote to sbx the moment the threat includes a kernel CVE — Incus LXC still shares the host kernel.",
+      also: threat === "hostile" ? ["docker-sbx"] : ["discobox", "yolobox", "docker-sbx"],
+      why: "You wanted a laptop, not a process. Incus system containers are that shape: systemd, apt, sudo, nested Docker, CoW clones. Pere Villega's Sandbox for Claude is the worked example. If you want several of those boxes on one repo with the work coming back as git commits, discobox is the packaged version. Promote to sbx the moment the threat includes a kernel CVE — Incus LXC and a Linux-default discobox pool still share the host kernel.",
     };
   }
   if (job === "embed") {
@@ -66,13 +73,13 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
   if (docker === "yes" || threat !== "accident") {
     return {
       winner: "docker-sbx",
-      also: threat === "accident" ? ["yolobox"] : ["microsandbox"],
+      also: threat === "accident" ? ["discobox", "yolobox"] : ["microsandbox", "openshell"],
       why: "Wrapping a YOLO CLI that must docker build is exactly why sbx exists: dedicated kernel, private daemon, proxy-injected secrets, live project mount. yolobox is the lighter accident fence if you do not need that engine and do not fear a kernel CVE.",
     };
   }
   return {
     winner: "nono",
-    also: ["yolobox", "claude-code"],
+    also: ["openshell", "yolobox", "claude-code"],
     why: "You want YOLO on a laptop, no nested Docker, defending against carelessness. nono wraps whichever CLI in Landlock/Seatbelt with a tighter box per tool and phantom secrets — zero image, zero VM. yolobox if you also need to hide $HOME behind a container rootfs. Promote to sbx or Incus the moment the agent needs a machine or an engine.",
   };
 }
