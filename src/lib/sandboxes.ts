@@ -27,11 +27,18 @@ export type System = {
   short: string;
   maker: string;
   family: Family;
+  /**
+   * Other families the same product reaches by configuration alone — a driver,
+   * an image or a pool host — not a different product under the same name.
+   * `family` stays the default deployment; the stack explorer lists these with
+   * their qualifier.
+   */
+  deployments?: { family: Family; via: string }[];
   familyNote: string;
   oneLiner: string;
   role: "wrapper" | "runtime" | "harness";
   vmm: string;
-  kernel: "shared" | "dedicated" | "mixed";
+  kernel: "shared" | "dedicated" | KernelVaries;
   openSource: string;
   platforms: string;
   startup: string;
@@ -51,9 +58,11 @@ export type System = {
     untrustedCode: Score;
     laptopDx: Score;
   };
-  layers: string[];
   sources: { label: string; href: string }[];
 };
+
+/** A kernel line set by configuration: which knob picks it, and what each setting gives. */
+export type KernelVaries = { per: "image" | "driver" | "pool"; detail: string };
 
 export type Threat = {
   id: string;
@@ -210,7 +219,6 @@ export const SYSTEMS: System[] = [
       "Apple Container cannot build derived images, cannot --platform, and does not share a kernel with a sibling container",
     ],
     scores: { isolation: 2, performance: 4, harnessFit: 5, untrustedCode: 2, laptopDx: 5 },
-    layers: ["hw", "host-kernel", "ns", "rootfs", "agent"],
     sources: [
       { label: "yolobox.dev", href: "https://yolobox.dev/" },
       { label: "github.com/finbarr/yolobox", href: "https://github.com/finbarr/yolobox" },
@@ -252,7 +260,6 @@ export const SYSTEMS: System[] = [
       "OCI application containers exist in Incus too — do not confuse those with system containers",
     ],
     scores: { isolation: 3, performance: 4, harnessFit: 3, untrustedCode: 2, laptopDx: 3 },
-    layers: ["hw", "host-kernel", "lxc", "distro", "nested", "agent"],
     sources: [
       { label: "Incus containers vs VMs", href: "https://linuxcontainers.org/incus/docs/main/explanation/containers_and_vms/" },
       { label: "Incus FAQ: Docker inside", href: "https://linuxcontainers.org/incus/docs/main/faq/" },
@@ -299,7 +306,6 @@ export const SYSTEMS: System[] = [
       "Prompts, env_commands and the default profile are honored only from ~/.coi, never from a repo's .coi/config.toml — a cloned repo cannot redefine what coi runs, which is the right default and also means per-repo setup is limited",
     ],
     scores: { isolation: 3, performance: 4, harnessFit: 5, untrustedCode: 3, laptopDx: 4 },
-    layers: ["hw", "host-kernel", "lxc", "distro", "nested", "agent"],
     sources: [
       { label: "github.com/mensfeld/code-on-incus", href: "https://github.com/mensfeld/code-on-incus" },
       { label: "Maciej Mensfeld: Claude on Incus — all the autonomy, securely (Jan 2026)", href: "https://mensfeld.pl/2026/01/claude-on-incus-all-the-autonomy-securely/" },
@@ -349,7 +355,6 @@ export const SYSTEMS: System[] = [
       "Closed VMM; you are in Docker's release train",
     ],
     scores: { isolation: 4, performance: 3, harnessFit: 5, untrustedCode: 4, laptopDx: 4 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-user", "agent"],
     sources: [
       { label: "docs.docker.com/ai/sandboxes", href: "https://docs.docker.com/ai/sandboxes/" },
       { label: "Why MicroVMs (Docker blog)", href: "https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/" },
@@ -391,7 +396,6 @@ export const SYSTEMS: System[] = [
       "Cloud offering has been a separate, evolving product",
     ],
     scores: { isolation: 5, performance: 5, harnessFit: 3, untrustedCode: 5, laptopDx: 3 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-user", "agent"],
     sources: [
       { label: "github.com/superradcompany/microsandbox", href: "https://github.com/superradcompany/microsandbox" },
       { label: "libkrun", href: "https://github.com/containers/libkrun" },
@@ -434,7 +438,6 @@ export const SYSTEMS: System[] = [
       "Wrong tool if all you needed was Seatbelt around bash",
     ],
     scores: { isolation: 5, performance: 4, harnessFit: 2, untrustedCode: 5, laptopDx: 2 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-user", "agent"],
     sources: [
       { label: "github.com/kernel/hypeman", href: "https://github.com/kernel/hypeman" },
       { label: "kernel.sh", href: "https://www.kernel.sh/" },
@@ -477,7 +480,6 @@ export const SYSTEMS: System[] = [
       "SDK 1.0 (@cloudflare/sandbox@next) drops sessions and string exec; keep the npm package and the image on the same release line",
     ],
     scores: { isolation: 5, performance: 3, harnessFit: 3, untrustedCode: 5, laptopDx: 2 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-user", "agent"],
     sources: [
       { label: "Sandbox SDK concepts", href: "https://developers.cloudflare.com/sandbox/concepts/" },
       { label: "Security model", href: "https://developers.cloudflare.com/sandbox/concepts/security/" },
@@ -524,7 +526,6 @@ export const SYSTEMS: System[] = [
       "Source licence undetermined at the time of writing",
     ],
     scores: { isolation: 5, performance: 2, harnessFit: 3, untrustedCode: 4, laptopDx: 4 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-tools", "agent"],
     sources: [
       { label: "ghostvm.org", href: "https://ghostvm.org/" },
       { label: "Host-guest services (vsock)", href: "https://ghostvm.org/docs/services" },
@@ -570,7 +571,6 @@ export const SYSTEMS: System[] = [
       "PowerShell Direct has no VZ equivalent; the Mac path drives the guest through the shared folder",
     ],
     scores: { isolation: 5, performance: 2, harnessFit: 4, untrustedCode: 4, laptopDx: 2 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-tools", "agent"],
     sources: [
       { label: "github.com/glslang/agent-sandbox-vm", href: "https://github.com/glslang/agent-sandbox-vm" },
       { label: "macOS host (Virtualization.framework)", href: "https://github.com/glslang/agent-sandbox-vm/blob/main/macos/README.md" },
@@ -613,7 +613,6 @@ export const SYSTEMS: System[] = [
       "utmctl wraps AppleScript — a launcher, not a guest control plane",
     ],
     scores: { isolation: 5, performance: 2, harnessFit: 2, untrustedCode: 4, laptopDx: 3 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-tools", "agent"],
     sources: [
       { label: "mac.getutm.app", href: "https://mac.getutm.app/" },
       { label: "UTM docs: macOS guests", href: "https://docs.getutm.app/guest-support/macos/" },
@@ -627,11 +626,15 @@ export const SYSTEMS: System[] = [
     short: "One computer the agent codes in and clicks through",
     maker: "Cua (trycua)",
     family: "vm",
+    deployments: [{ family: "container", via: "container Image" }],
     familyNote: "A computer-use sandbox: one isolated machine with a code half (shell, PTY, a sandboxed Python venv) and a GUI half (screenshots, the accessibility tree, clicks, typing) sharing one filesystem and one OS. The family depends on the Image: Image.linux(kind='container') is a Docker XFCE container on the host kernel; Image.linux() is an Ubuntu VM under QEMU; Image.macos() is a Lume guest on Virtualization.framework; Image.windows() is Hyper-V, Docker-wrapped QEMU, or bare QEMU; Image.android() is the emulator. Every default except the explicit container kind boots its own kernel, so it sits here, with the container path flagged below.",
     oneLiner: "A desktop per agent — Linux, macOS, Windows or Android — where a shell command and a mouse click land on the same files.",
     role: "runtime",
     vmm: "Per Image: none (Docker container), QEMU with /dev/kvm when present, Lume on Virtualization.framework, Hyper-V. Fleet boots KubeVirt-style containerDisks on Cua's capacity.",
-    kernel: "mixed",
+    kernel: {
+      per: "image",
+      detail: "Per Image: shared host (container kind) or dedicated guest (VM kinds)",
+    },
     openSource: "SDK, cua-server and Lume are open source (trycua/cua). Fleet and Cloud macOS are Cua's services.",
     platforms: "Local: any host with Docker, qemu-system-x86_64, or an Apple silicon Mac with Lume. Fleet: managed pools, us-east-1 only in 0.4.3.",
     startup: "Seconds for the container kind; a full OS boot for every VM kind; a Fleet claim reserves an already-booted machine from a pool.",
@@ -658,7 +661,6 @@ export const SYSTEMS: System[] = [
       "Cloud macOS is a separate, waitlisted product on a patented stack — the docs do not relate it to Lume or to Apple's two-guest cap",
     ],
     scores: { isolation: 4, performance: 3, harnessFit: 2, untrustedCode: 4, laptopDx: 3 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-tools", "agent"],
     sources: [
       { label: "How sandboxes work", href: "https://cua.ai/docs/concepts/how-sandboxes-work" },
       { label: "Sandbox runtime support (0.4.3)", href: "https://cua.ai/docs/reference/sandbox-sdk/runtime-support" },
@@ -703,7 +705,6 @@ export const SYSTEMS: System[] = [
       "Cloud macOS fleets of thousands run on a separate patented stack the docs do not describe",
     ],
     scores: { isolation: 5, performance: 2, harnessFit: 2, untrustedCode: 4, laptopDx: 3 },
-    layers: ["hw", "host-kernel", "vmm", "guest-kernel", "guest-tools", "agent"],
     sources: [
       { label: "How Lume creates local macOS sandboxes", href: "https://cua.ai/docs/concepts/how-lume-unattended-setup-works" },
       { label: "How SIP works in Lume VMs", href: "https://cua.ai/docs/concepts/how-sip-works-in-lume-vms" },
@@ -751,7 +752,6 @@ export const SYSTEMS: System[] = [
       "Ubuntu 24.04+ AppArmor blocks bubblewrap's user namespaces until you add a bwrap profile; without it the sandbox silently degrades unless failIfUnavailable is set",
     ],
     scores: { isolation: 2, performance: 5, harnessFit: 5, untrustedCode: 2, laptopDx: 5 },
-    layers: ["hw", "host-kernel", "policy", "agent", "bash"],
     sources: [
       { label: "Claude Code sandboxing docs", href: "https://code.claude.com/docs/en/sandboxing" },
       { label: "Sandboxing · security limitations (TLS not inspected)", href: "https://code.claude.com/docs/en/sandboxing#security-limitations" },
@@ -796,7 +796,6 @@ export const SYSTEMS: System[] = [
       "MITM is off in the default full mode; at 36f0dbe the README says hooks turn it on, config.rs says they do not — read your own build. The remote exec-server proxy supports neither MITM, credential injection nor hooks, and DNS rebinding is a stated limitation",
     ],
     scores: { isolation: 3, performance: 5, harnessFit: 5, untrustedCode: 3, laptopDx: 4 },
-    layers: ["hw", "host-kernel", "policy", "agent", "bash"],
     sources: [
       { label: "Codex sandboxing", href: "https://learn.chatgpt.com/docs/sandboxing" },
       { label: "Agent approvals & security", href: "https://learn.chatgpt.com/docs/agent-approvals-security" },
@@ -844,7 +843,6 @@ export const SYSTEMS: System[] = [
       "Windows is WSL2, not a native job object sandbox",
     ],
     scores: { isolation: 3, performance: 5, harnessFit: 5, untrustedCode: 2, laptopDx: 5 },
-    layers: ["hw", "host-kernel", "policy", "agent", "bash"],
     sources: [
       { label: "nono.sh", href: "https://nono.sh/" },
       { label: "github.com/nolabs-ai/nono", href: "https://github.com/nolabs-ai/nono" },
@@ -856,13 +854,17 @@ export const SYSTEMS: System[] = [
     short: "Policy gateway over Docker · K8s · microVM",
     maker: "NVIDIA",
     family: "container",
+    deployments: [{ family: "microvm", via: "VM driver" }],
     familyNote:
       "A control plane, not one primitive. A gateway owns policy, providers and identity; a compute driver builds the boundary — Docker, Podman, a Kubernetes pod (Kata via runtimeClass if you ask), or a libkrun microVM. The same supervisor and policy engine run over all of them, so the kernel line is a driver setting: shared on Docker, Podman and Kubernetes, dedicated on the VM driver. Inside, a capability-free non-root workload gets Landlock, seccomp and a network namespace whose only exit is a supervisor that sits on the trusted side and holds the real credentials.",
     oneLiner:
       "Declare what each agent may touch in a policy. A supervisor outside the workload enforces it, injects credentials only at approved endpoints, and a prover checks policy changes before they apply.",
     role: "runtime",
     vmm: "Driver-chosen: none (Docker, Podman, K8s) · libkrun on KVM / Apple Hypervisor (VM driver) · Kata via runtimeClass",
-    kernel: "shared",
+    kernel: {
+      per: "driver",
+      detail: "Per driver: shared host on Docker, Podman and Kubernetes; a dedicated guest per sandbox on the VM driver or a Kata runtimeClass",
+    },
     openSource: "Apache-2.0",
     platforms: "Linux x86_64 / arm64; macOS Apple Silicon via Docker Desktop; Windows WSL 2 (experimental). Native Windows via MXC: announced, not shipped.",
     startup: "Container or pod start plus a supervisor handshake; the agent is held until the boundary is confirmed. MicroVM boot on the VM driver.",
@@ -893,7 +895,6 @@ export const SYSTEMS: System[] = [
       "Docker Desktop needs host networking and no Enhanced Container Isolation; WSL 2 is experimental",
     ],
     scores: { isolation: 3, performance: 4, harnessFit: 4, untrustedCode: 3, laptopDx: 3 },
-    layers: ["hw", "host-kernel", "ns", "rootfs", "agent"],
     sources: [
       { label: "OpenShell architecture", href: "https://docs.nvidia.com/openshell/latest/about/architecture" },
       { label: "github.com/NVIDIA/OpenShell", href: "https://github.com/NVIDIA/OpenShell" },
@@ -906,13 +907,17 @@ export const SYSTEMS: System[] = [
     short: "Parallel agent boxes, git as the sync layer",
     maker: "discobox-ai",
     family: "system",
+    deployments: [{ family: "microvm", via: "one box per libkrun pool" }],
     familyNote:
       "yolobox's workflow (wrap Claude Code, Codex or OpenCode, passwordless sudo) with Incus's shape: each box is a systemd Linux container with nested Docker, a desktop and a browser. The difference is the pool. Boxes live inside a pool, which is one runtime host, and boxes in a pool share its kernel by design — the project's own ADR says mutually untrusted work belongs in different pools. The pool host is the kernel line, and it depends on the OS: a Virtualization.framework VM on macOS, a WSL Containers VM on Windows, the host's own Docker daemon on Linux by default, or a libkrun microVM or cloud VM if you opt in.",
     oneLiner:
       "Give each agent session its own box with its own clone of the repo, and get the work back as ordinary git commits.",
     role: "wrapper",
     vmm: "Per pool: Virtualization.framework (macOS) · WSL Containers (Windows) · host Docker daemon (Linux default) · libkrun / KVM, cloud VM, Kata (opt-in)",
-    kernel: "shared",
+    kernel: {
+      per: "pool",
+      detail: "Per pool: the host's own kernel on the Linux default; on macOS, Windows or libkrun, a pool VM whose one guest kernel every box in the pool shares",
+    },
     openSource: "Apache-2.0",
     platforms: "macOS, Linux, Windows. The client installs with brew or a script; the server is downloaded on first use.",
     startup: "The first pool fetches a guest image and boots a VM or daemon; later boxes start inside a warm pool. Idle boxes stop themselves when their terminals go quiet.",
@@ -942,7 +947,6 @@ export const SYSTEMS: System[] = [
       "The judge is a guardrail inside the box, not a trust boundary",
     ],
     scores: { isolation: 3, performance: 3, harnessFit: 4, untrustedCode: 2, laptopDx: 4 },
-    layers: ["hw", "host-kernel", "lxc", "distro", "nested", "agent"],
     sources: [
       { label: "github.com/discobox-ai/discobox", href: "https://github.com/discobox-ai/discobox" },
       { label: "ADR 0003: the pool", href: "https://github.com/discobox-ai/discobox/blob/main/docs/adr/0003-promote-pool-to-a-first-class-primitive.md" },
@@ -1798,13 +1802,34 @@ export function systemById(id: SystemId) {
   return SYSTEMS.find((s) => s.id === id)!;
 }
 
-export const FAMILY_SYSTEMS: Record<Family, SystemId[]> = {
-  process: ["claude-code", "codex", "nono"],
-  container: ["yolobox", "openshell"],
-  system: ["incus", "code-on-incus", "discobox"],
-  microvm: ["docker-sbx", "microsandbox", "hypeman", "cloudflare", "openshell", "discobox"],
-  vm: ["ghostvm", "agent-sandbox-vm", "utm", "cua-sandbox", "lume"],
-};
+/** A system as the stack explorer lists it under a family, with the setting that puts it there. */
+export type FamilyMember = { id: SystemId; via?: string };
+
+/**
+ * Derived from each system's `family` and `deployments`, so a family listing
+ * can never disagree with the record it points at.
+ */
+export const FAMILY_SYSTEMS: Record<Family, FamilyMember[]> = (() => {
+  const byFamily: Record<Family, FamilyMember[]> = { process: [], container: [], system: [], microvm: [], vm: [] };
+  for (const s of SYSTEMS) byFamily[s.family].push({ id: s.id });
+  // Deployments after every default member, so each family leads with its own.
+  for (const s of SYSTEMS) {
+    for (const d of s.deployments ?? []) byFamily[d.family].push({ id: s.id, via: d.via });
+  }
+  return byFamily;
+})();
+
+/** Short kernel label for badges and card footers. */
+export function kernelLabel(s: System): string {
+  return typeof s.kernel === "string" ? `${s.kernel} kernel` : `kernel per ${s.kernel.per}`;
+}
+
+/** One-line kernel explanation for the architecture notes. */
+export function kernelDetail(s: System): string {
+  if (s.kernel === "dedicated") return "Dedicated guest";
+  if (s.kernel === "shared") return "Shared host";
+  return s.kernel.detail;
+}
 
 export const SYSTEM_CONTAINER_CASES: {
   id: string;

@@ -6,9 +6,8 @@ const LINKS = [
   { href: "#stack", label: "Stack" },
   { href: "#layers", label: "Layers" },
   { href: "#workloads", label: "Workloads" },
+  // One entry for the three system sections: the grid, system containers, the matrix.
   { href: "#systems", label: "Systems" },
-  { href: "#need", label: "Machines" },
-  { href: "#matrix", label: "Matrix" },
   { href: "#threats", label: "Threats" },
   { href: "#harness", label: "Harness" },
   { href: "#mac", label: "Mac" },

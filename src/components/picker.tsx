@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { SYSTEMS, type SystemId } from "@/lib/sandboxes";
+import { SYSTEMS, kernelLabel, type SystemId } from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +57,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
       return {
         winner: "hypeman",
         also: ["openshell", "incus"],
-        why: "A kernel wall around a GPU means a VMM that does VFIO passthrough. Firecracker and qemu-microvm cannot pass PCI, and hypeman's macOS backend refuses VFIO, so pick QEMU or Cloud Hypervisor on Linux; NVIDIA vGPU wants QEMU. Expect one GPU per VM and a density cost.",
+        why: "A kernel wall around a GPU means a VMM that does VFIO passthrough. Firecracker and qemu-microvm cannot pass PCI, and hypeman's macOS backend refuses VFIO, so pick QEMU or Cloud Hypervisor on Linux. VFIO hands a whole GPU to one VM, so expect a density cost; NVIDIA vGPU slices a card across VMs, and wants QEMU.",
       };
     }
     return {
@@ -263,7 +263,7 @@ export function Picker() {
           <Badge tone={winner.family === "microvm" || winner.family === "vm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
             {winner.family}
           </Badge>
-          <Badge>{winner.kernel === "mixed" ? "kernel per image" : `${winner.kernel} kernel`}</Badge>
+          <Badge>{kernelLabel(winner)}</Badge>
         </div>
         <p className="mt-5 text-sm leading-relaxed text-fg">{result.why}</p>
         {result.also.length ? (

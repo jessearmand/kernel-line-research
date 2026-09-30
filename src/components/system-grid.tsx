@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SYSTEMS, SCORE_LABELS, type Score, type System, type SystemId } from "@/lib/sandboxes";
+import { SYSTEMS, SCORE_LABELS, kernelDetail, kernelLabel, type Score, type System, type SystemId } from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,14 +44,7 @@ function SystemBody({ system }: { system: System }) {
       <dl className="grid gap-4 text-sm sm:grid-cols-2">
         {[
           ["VMM", system.vmm],
-          [
-            "Kernel",
-            system.kernel === "dedicated"
-              ? "Dedicated guest"
-              : system.kernel === "mixed"
-                ? "Per image: shared host (container kind) or dedicated guest (VM kinds)"
-                : "Shared host",
-          ],
+          ["Kernel", kernelDetail(system)],
           ["Source", system.openSource],
           ["Platforms", system.platforms],
           ["Startup", system.startup],
@@ -149,7 +142,7 @@ export function SystemGrid() {
             </div>
             <p className="mt-4 text-sm leading-relaxed text-fg">{s.oneLiner}</p>
             <p className="mt-3 font-mono text-[11px] text-subtle uppercase">
-              {s.maker} · {s.role} · {s.kernel === "mixed" ? "kernel per image" : `${s.kernel} kernel`}
+              {s.maker} · {s.role} · {kernelLabel(s)}
             </p>
             <div className="mt-5 space-y-2">
               <ScoreRow label="Isolation" value={s.scores.isolation} />
