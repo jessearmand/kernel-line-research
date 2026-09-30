@@ -5,8 +5,8 @@ Interactive comparison of AI agent sandbox architectures: [yolobox](https://yolo
 ## Run
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Then open the URL Vite prints (port 8080 in this workspace).
