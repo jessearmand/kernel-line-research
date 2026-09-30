@@ -3,7 +3,7 @@ import { SYSTEMS, type SystemId } from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Job = "wrap" | "embed" | "browser" | "pair" | "machine";
+type Job = "wrap" | "embed" | "browser" | "pair" | "machine" | "desktop" | "native" | "gpu";
 type Threat = "accident" | "hostile" | "tenant";
 type DockerNeed = "yes" | "no";
 type Where = "laptop" | "cloud" | "embed";
@@ -14,6 +14,9 @@ const JOBS: { id: Job; label: string; hint: string }[] = [
   { id: "embed", label: "Execute untrusted code", hint: "Your product runs model-written programs" },
   { id: "browser", label: "Browser agents at scale", hint: "Cloud Chromium, snapshots, tenants" },
   { id: "pair", label: "Interactive pair-programming", hint: "Stay in the repo, don't wrap anything" },
+  { id: "desktop", label: "Computer-use agent", hint: "A Linux desktop: screenshots, clicks, a browser" },
+  { id: "native", label: "App agent on macOS or Windows", hint: "Xcode, .NET, a native app" },
+  { id: "gpu", label: "GPU or heavy compute", hint: "Local models, simulators, big builds" },
 ];
 
 const THREATS: { id: Threat; label: string; hint: string }[] = [
@@ -22,11 +25,59 @@ const THREATS: { id: Threat; label: string; hint: string }[] = [
   { id: "tenant", label: "Hostile tenants", hint: "Someone else's agent on your host" },
 ];
 
-function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): {
-  winner: SystemId;
+type Recommendation = {
+  winner: SystemId | null;
+  headline?: string;
+  sub?: string;
   also: SystemId[];
   why: string;
-} {
+};
+
+function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): Recommendation {
+  if (job === "native") {
+    return {
+      winner: null,
+      headline: "A macOS or Windows guest VM",
+      sub: "None of the ten ships this today",
+      also: ["discobox", "openshell"],
+      why: "A Linux microVM or container cannot be this machine. The sandbox is a full-OS guest on Virtualization.framework or Hyper-V, Apple caps macOS guests at two running per Mac, and the images are assembled on your own hardware. Local macOS VMs (Cua Lume, Tart) and hosted desktop fleets exist today. discobox's design records describe macOS and Windows guests and OpenShell has announced native Windows, but neither is confirmed shipped. With no wall at all, mediation and human approval carry the safety story.",
+    };
+  }
+  if (job === "desktop") {
+    if (threat !== "accident" || where !== "laptop") {
+      return {
+        winner: "hypeman",
+        also: ["microsandbox", "discobox"],
+        why: "A hostile page or a fleet of desktops wants a wall per session and fast restore. hypeman runs a VM per browser with snapshots and ingress; microsandbox is the embeddable sibling. The wall is the smaller half of the job: also plan an egress allowlist, a fresh profile with no signed-in accounts, a human gate on consequential actions, and keeping the agent loop outside the box. Hosted desktops (E2B Desktop, Cua Fleets) sell the same shape if you would rather not run it.",
+      };
+    }
+    return {
+      winner: "discobox",
+      also: ["incus", "hypeman"],
+      why: "On a laptop the useful parts are the desktop, the viewer and the audit trail. discobox ships an Xfce desktop and Chromium over noVNC in every box, a per-box proxy with audited requests, and credentials as sentinels. Its wall is its pool host, and on Linux by default that is your own Docker daemon, so keep sensitive logins off the machine and allowlist egress. Anthropic's own computer-use demo is the same shape: a container with X, VNC and Firefox.",
+    };
+  }
+  if (job === "gpu") {
+    if (where === "cloud") {
+      return {
+        winner: "openshell",
+        also: ["hypeman", "incus"],
+        why: "You are scheduling accelerators for other people. OpenShell takes GPUs through CDI on Docker and Podman, as a Kubernetes resource limit, or as one VFIO device on its VM driver, under one policy. Its default drivers share the host kernel, so use Kata or the VM driver for hostile tenants.",
+      };
+    }
+    if (threat !== "accident") {
+      return {
+        winner: "hypeman",
+        also: ["openshell", "incus"],
+        why: "A kernel wall around a GPU means a VMM that does VFIO passthrough. Firecracker does not; Cloud Hypervisor and QEMU do, and hypeman can pick them. Expect one GPU per VM and a density cost.",
+      };
+    }
+    return {
+      winner: "yolobox",
+      also: ["docker-sbx", "incus"],
+      why: "For accidents, a container with the GPU passed in is the light path: yolobox has a --gpus flag. It shares the host kernel and driver stack. sbx documents a GPU passthrough option if you want a VM boundary, and Incus passes GPUs into containers and VMs.",
+    };
+  }
   if (job === "browser" || (threat === "tenant" && where !== "laptop")) {
     return {
       winner: "hypeman",
@@ -124,7 +175,7 @@ export function Picker() {
     () => recommend(job, threat, docker, where),
     [job, threat, docker, where],
   );
-  const winner = SYSTEMS.find((s) => s.id === result.winner)!;
+  const winner = result.winner ? SYSTEMS.find((s) => s.id === result.winner)! : null;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
@@ -171,18 +222,24 @@ export function Picker() {
       </div>
       <aside className="h-fit rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)] md:p-6">
         <p className="font-mono text-[11px] tracking-wide text-subtle uppercase">Start here</p>
-        <h3 className="mt-2 text-2xl font-medium tracking-tight">{winner.name}</h3>
-        <p className="mt-1 text-sm text-muted">{winner.short}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Badge tone={winner.family === "microvm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
-            {winner.family}
-          </Badge>
-          <Badge>{winner.kernel} kernel</Badge>
-        </div>
+        <h3 className="mt-2 text-2xl font-medium tracking-tight">{winner ? winner.name : result.headline}</h3>
+        <p className="mt-1 text-sm text-muted">{winner ? winner.short : result.sub}</p>
+        {winner ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Badge tone={winner.family === "microvm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
+              {winner.family}
+            </Badge>
+            <Badge>{winner.kernel} kernel</Badge>
+          </div>
+        ) : (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Badge tone="bad">no system here</Badge>
+          </div>
+        )}
         <p className="mt-5 text-sm leading-relaxed text-fg">{result.why}</p>
         {result.also.length ? (
           <div className="mt-6 border-t border-border pt-4">
-            <p className="font-mono text-[11px] tracking-wide text-subtle uppercase">Also consider</p>
+            <p className="font-mono text-[11px] tracking-wide text-subtle uppercase">{winner ? "Also consider" : "Closest on this page"}</p>
             <ul className="mt-2 space-y-1 text-sm text-muted">
               {result.also.map((id) => {
                 const s = SYSTEMS.find((x) => x.id === id)!;

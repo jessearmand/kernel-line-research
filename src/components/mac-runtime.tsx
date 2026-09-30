@@ -128,7 +128,9 @@ export function MacRuntime() {
                 ? "VM per container"
                 : host.id === "incus-vm"
                   ? "VM in a VM"
-                  : "shared Linux VM"}
+                  : host.id === "macos-guest"
+                    ? "macOS VM, max two"
+                    : "shared Linux VM"}
             </Badge>
           </div>
           <h3 className="mt-4 text-xl font-medium tracking-tight">{layer.label}</h3>

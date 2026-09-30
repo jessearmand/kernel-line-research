@@ -24,6 +24,8 @@ export function Hero() {
           yolobox, Docker sbx, microsandbox, hypeman, Claude Code, Codex, nono,
           Incus, OpenShell, and discobox sit on four isolation primitives. Process,
           app container, system container, microVM — one question: whose kernel is it?
+          That question decides whether a compromise reaches your host. It does not
+          decide what a desktop agent can see, spend, or click.
         </p>
         <dl className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border md:grid-cols-4">
           {[

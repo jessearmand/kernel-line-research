@@ -13,6 +13,9 @@ Then open the URL Vite prints (port 8080 in this workspace).
 
 ## What it covers
 
+- The kernel line as one layer of six: compute boundary, machine fidelity (OS, GPU, display), state and lifecycle, mediation (egress, credentials, approvals), work and data, observation and control
+- Workloads that change which layer breaks first: coding CLI, untrusted code, browser agent, Linux computer-use desktop, macOS/Windows app agent, GPU and heavy compute — with real reference setups (Anthropic's computer-use demo, E2B Desktop, Cua, Kernel browsers)
+- Threats beyond the kernel line: pixels as instructions, the signed-in session, the screen leaving the box, the irreversible click
 - Isolation stack: process sandbox vs app container vs system container vs microVM
 - Harness compatibility (Claude Code, Codex, custom agents)
 - Threat model (kernel CVE, `rm -rf ~`, docker socket, two concurrent boxes)

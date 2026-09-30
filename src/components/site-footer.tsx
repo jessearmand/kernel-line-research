@@ -75,6 +75,16 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
+            <a className="hover:text-fg" href="https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo">
+              Anthropic computer-use demo · E2B Desktop · Cua (Lume, Fleets, Driver)
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://github.com/firecracker-microvm/firecracker/blob/main/docs/design.md">
+              Firecracker device model · Incus GPU devices · Apple's two-macOS-VM limit
+            </a>
+          </li>
+          <li>
             <a className="hover:text-fg" href="https://gvisor.dev/">
               gVisor · Modal sandbox security · Vercel Sandbox concepts (Firecracker)
             </a>
@@ -87,7 +97,9 @@ export function SiteFooter() {
           product. OpenShell (commit 5acaaba) and discobox (commit 4a7f956) were read from source and
           design records in Sep 2026, not run; both are moving fast. The Claude Code on the web observation (Firecracker guest kernel, vsock init,
           host-local connections blocked, credential proxy) was taken from inside one such session
-          in Sep 2026 and may change.
+          in Sep 2026 and may change. Workload ratings in the Workloads section are judgement from these sources, not
+          measurements. Firecracker's lack of GPU passthrough comes from its documented virtio-only device model and
+          third-party summaries, not a statement in its own docs.
         </p>
       </div>
     </footer>

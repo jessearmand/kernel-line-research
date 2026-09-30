@@ -4,12 +4,15 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "#spectrum", label: "Spectrum" },
   { href: "#stack", label: "Stack" },
+  { href: "#layers", label: "Layers" },
+  { href: "#workloads", label: "Workloads" },
   { href: "#systems", label: "Systems" },
-  { href: "#need", label: "Incus" },
+  { href: "#need", label: "Machines" },
   { href: "#matrix", label: "Matrix" },
   { href: "#threats", label: "Threats" },
   { href: "#harness", label: "Harness" },
   { href: "#mac", label: "Mac" },
+  { href: "#microvm", label: "Kernel" },
   { href: "#pick", label: "Pick" },
 ];
 
