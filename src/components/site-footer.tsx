@@ -120,6 +120,11 @@ export function SiteFooter() {
             </a>
           </li>
           <li>
+            <a className="hover:text-fg" href="https://github.com/daytonaio/daytona">
+              daytonaio/daytona (AGPL-3.0, frozen at v0.190.0) · Modal, Vercel, E2B licences
+            </a>
+          </li>
+          <li>
             <a className="hover:text-fg" href="https://developers.cloudflare.com/sandbox/">
               Cloudflare Sandboxes · lifetime · security · outbound traffic · Container limits
             </a>
@@ -201,7 +206,8 @@ export function SiteFooter() {
           measurements. Firecracker's lack of GPU passthrough comes from its documented virtio-only device model and
           third-party summaries, not a statement in its own docs. The Landscape entries (Strands Box,
           SPACE, Cloudflare, Vercel, E2B, Daytona, Modal, Archil) were read from their docs and READMEs in late Oct 2026, not run; Strands Box
-          and SPACE's snapshot operations are preview or incubating.
+          and SPACE's snapshot operations are preview or incubating. Who-runs-it and licence classes
+          come from each project's README and LICENSE files read the same week.
         </p>
       </div>
     </footer>

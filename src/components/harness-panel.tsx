@@ -4,7 +4,10 @@ export function HarnessPanel() {
   return (
     <div className="space-y-6">
       <div className="overflow-x-auto rounded-xl shadow-[var(--shadow-border)]">
-        <table className="min-w-[1100px] w-full border-collapse text-sm">
+        <table
+          className="w-full border-collapse text-sm"
+          style={{ minWidth: SYSTEMS.length * 150 }}
+        >
           <thead className="bg-bg-elevated">
             <tr>
               <th className="px-4 py-3 text-left font-mono text-[11px] tracking-wide text-subtle uppercase">
@@ -35,7 +38,7 @@ export function HarnessPanel() {
         {[
           {
             t: "Wrappers",
-            d: "nono, yolobox, discobox, and Docker sbx launch someone else's CLI. nono is a process policy — as are sandbox-runtime, fence and landrun, the smaller wrappers this site folds into that row. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist, and Litterbox on Podman. sbx is a microVM with a private engine. In all of them the harness and its own API token live inside the box.",
+            d: "nono, Strands Box, yolobox, discobox, and Docker sbx launch someone else's CLI. nono is a process policy; Strands Box is one too, but its fence only funnels the agent's shell, Python, MCP and network into a policy engine outside it — as are sandbox-runtime, fence and landrun, the smaller wrappers this site folds into that row. yolobox is an app container — as is Anthropic's reference dev container with its iptables egress allowlist, and Litterbox on Podman. sbx is a microVM with a private engine. In all of them the harness lives inside the box; nono, sbx and Strands Box keep its upstream keys outside and inject them.",
           },
           {
             t: "Harness sandboxes",
@@ -47,14 +50,17 @@ export function HarnessPanel() {
           },
           {
             t: "Runtimes",
-            d: "microsandbox and hypeman run OCI as a VM on hardware you own. OpenShell is a control plane over runtimes like these: you image the agent, and it supplies policy, credentials and audit. Cloudflare Sandbox runs it as a Firecracker VM on Cloudflare's, with your Worker as the control plane and the egress proxy. You image Claude Code or OpenCode into any of them; their native client is your code, not Anthropic's CLI.",
+            d: "microsandbox, hypeman and SPACE run a VM per sandbox on hardware you own; SPACE is the fleet-shaped one, with an E2B-compatible API. OpenShell is a control plane over runtimes like these: you image the agent, and it supplies policy, credentials and audit. Cloudflare, Vercel, E2B, Modal, Daytona and Archil rent the same unit: Cloudflare with your Worker as the control plane and the egress proxy, Vercel with claude, codex and opencode already in the image, E2B with a Claude Code template. You image Claude Code or OpenCode into any of them; their native client is your code, not Anthropic's CLI.",
           },
           {
             t: "Full VMs",
             d: "GhostVM, UTM, Lume and agent-sandbox-vm boot a whole macOS or Windows guest and you install the agent inside like on any Mac or PC. Nothing here wraps a CLI; the host-side handles are vmctl remote exec, utmctl, lume ssh, PowerShell Direct or prlctl exec. Cua Sandbox is the exception in kind: its native client is a computer-use agent that clicks and types, with a shell and a Python venv on the same machine. The harness and its login live in the guest, which is why the products push one workspace per client.",
           },
         ].map((x) => (
-          <article key={x.t} className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">
+          <article
+            key={x.t}
+            className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]"
+          >
             <h3 className="text-base font-medium tracking-tight">{x.t}</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">{x.d}</p>
           </article>

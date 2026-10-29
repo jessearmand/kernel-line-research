@@ -1,7 +1,10 @@
 import { useState } from "react";
 import {
+  DELIVERY_LABELS,
   FAMILIES,
   LAYERS,
+  OPENNESS_LABELS,
+  deliveryLine,
   systemById,
   type Family,
   type LayerId,
@@ -10,21 +13,20 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Origin = "open" | "rented";
 type Wall = Family | "gvisor" | "isolate";
 
+type RentedId = "cloudflare" | "vercel" | "e2b" | "modal" | "daytona" | "archil";
+
+/** A rented sandbox. Its id is also its full row in the Systems section. */
 type Entry = {
-  id: string;
+  id: RentedId;
   name: string;
   maker: string;
-  origin: Origin;
   status: string;
   /** Where its wall sits on the five-family axis, or on one of the two off-axis primitives. */
   walls: { family: Wall; via: string }[];
   /** The layer this entry moves furthest; the reason it is on the page. */
   layer: LayerId;
-  /** A full row elsewhere on the page, when there is one. */
-  system?: SystemId;
   near: SystemId[];
   shape: string;
   adds: string[];
@@ -32,21 +34,17 @@ type Entry = {
   sources: { label: string; href: string }[];
 };
 
-type RentedId = "cloudflare" | "vercel" | "e2b" | "modal" | "daytona" | "archil";
-
-const ENTRIES: (Entry & { id: string })[] = [
+const ENTRIES: Entry[] = [
   {
     id: "cloudflare",
     name: "Cloudflare Sandboxes",
     maker: "Cloudflare",
-    origin: "rented",
     status: "Workers Paid · docs rewritten Sep–Oct 2026; Sandbox SDK 0.x is now the legacy path",
     walls: [
       { family: "microvm", via: "Containers: Firecracker, own kernel" },
       { family: "isolate", via: "Dynamic Workers: a V8 isolate" },
     ],
     layer: "mediation",
-    system: "cloudflare",
     near: ["hypeman", "openshell"],
     shape:
       "Two sandboxes behind one Worker. A Durable Object starts a Container from your image in a Firecracker microVM and execs into it; a Worker loader starts a Dynamic Worker for JavaScript, Python or Wasm that can only call the methods you hand it. Either way the only door in or out is your Worker.",
@@ -74,7 +72,6 @@ const ENTRIES: (Entry & { id: string })[] = [
     id: "vercel",
     name: "Vercel Sandbox",
     maker: "Vercel",
-    origin: "rented",
     status: "Hosted · JS and Python SDKs, sandbox CLI · all Vercel regions",
     walls: [{ family: "microvm", via: "Firecracker, own kernel" }],
     layer: "mediation",
@@ -104,7 +101,6 @@ const ENTRIES: (Entry & { id: string })[] = [
     id: "e2b",
     name: "E2B",
     maker: "E2B",
-    origin: "rented",
     status: "Hosted · Python and JS SDKs · infrastructure open source (e2b-dev/infra)",
     walls: [{ family: "microvm", via: "Firecracker VM per sandbox" }],
     layer: "lifecycle",
@@ -131,7 +127,6 @@ const ENTRIES: (Entry & { id: string })[] = [
     id: "modal",
     name: "Modal Sandboxes",
     maker: "Modal",
-    origin: "rented",
     status: "Hosted · Python, JS and Go SDKs",
     walls: [
       { family: "gvisor", via: "default runtime" },
@@ -160,7 +155,6 @@ const ENTRIES: (Entry & { id: string })[] = [
     id: "daytona",
     name: "Daytona",
     maker: "Daytona",
-    origin: "rented",
     status: "Hosted · SDKs in Python, TypeScript, Ruby, Go, Java",
     walls: [
       { family: "container", via: "default class" },
@@ -190,7 +184,6 @@ const ENTRIES: (Entry & { id: string })[] = [
     id: "archil",
     name: "Archil",
     maker: "Archil",
-    origin: "rented",
     status: "Hosted, or BYOC on any cloud or bare metal · compute in AWS regions",
     walls: [{ family: "microvm", via: "Firecracker per sandbox, KVM" }],
     layer: "work",
@@ -217,64 +210,6 @@ const ENTRIES: (Entry & { id: string })[] = [
       },
     ],
   },
-  {
-    id: "strands-box",
-    name: "Strands Box",
-    maker: "AWS · Strands Agents",
-    origin: "open",
-    status: "Apache-2.0 · developer preview, Oct 2026 · macOS on Apple silicon, Linux planned",
-    walls: [{ family: "process", via: "an OS sandbox that only funnels" }],
-    layer: "mediation",
-    near: ["nono", "openshell", "claude-code"],
-    shape:
-      "A kernel-enforced sandbox whose job is not to hold the policy but to make the policy layer the only way out. The agent's shell commands, Python, local MCP calls and network requests leave through Strands Shell, Monty, an MCP broker and an egress gateway, all in a trusted process outside the sandbox, all asking one Dogwood engine.",
-    adds: [
-      "Semantic and temporal rules over one event history: 'git push only if npm test exited 0 since the last git add, within 15 minutes', '60 calls to the AWS MCP server per hour'. A file read through Python can deny a later HTTP request.",
-      "Default-deny for every operation the engine checks; a matching forbid beats a permit.",
-      "The gateway checks method and path, injects API keys or SigV4 signatures, and the agent never holds the secret. Decisions are written as OTLP records.",
-      "Programs the agent launches (git, cargo, a local MCP server) each get their own sandbox and their own file grants, with network through the gateway.",
-    ],
-    watch: [
-      "A bigger trusted base by design: interpreters and protocol interceptors, written in Rust and fuzzed, are now inside the TCB. AWS's own advice for multi-tenant cloud use is to put Box inside a per-session microVM such as AgentCore Runtime.",
-      "Direct filesystem grants in box.toml are enforced by the OS and produce no Dogwood decision. A rule only covers files the agent reaches through the interpreters.",
-    ],
-    sources: [
-      {
-        label: "Strands Box: The Big Picture",
-        href: "https://strandsagents.com/blog/strands-box-the-big-picture/",
-      },
-      { label: "strands-agents/box", href: "https://github.com/strands-agents/box" },
-    ],
-  },
-  {
-    id: "space",
-    name: "SPACE",
-    maker: "Perplexity",
-    origin: "open",
-    status: "Apache-2.0 · Rust services, HTTP + SSE API · Kubernetes or direct workers",
-    walls: [{ family: "microvm", via: "Firecracker per sandbox" }],
-    layer: "lifecycle",
-    near: ["hypeman", "microsandbox", "cloudflare"],
-    shape:
-      "The rented column, self-hosted: templates boot into Firecracker sandboxes with btrfs copy-on-write roots, commands run as sessions whose output streams on a separate data plane with a session-scoped token, and every lifecycle change is an asynchronous operation you poll.",
-    adds: [
-      "Two kinds of sleep with different promises. Pause keeps VM memory resident on the worker and is not a durable snapshot. Suspend writes memory, runtime state and root filesystem to object storage and releases the VM.",
-      "Warm pools of booted sandboxes on Kubernetes, and base snapshots on a single node, so a create skips the cold boot.",
-      "An E2B Compatibility Wrapper: the E2B SDK talks to your own fleet, with E2B's pause mapped to SPACE suspend.",
-      "Egress as policy: Kubernetes NetworkPolicies confine sandboxes to the public internet and cluster DNS, operator profiles add allowances per tenant, and the gateway can intercept TLS with named exemptions.",
-    ],
-    watch: [
-      "You run the fleet. Host-side services hold the privileges to create VMs, storage and networks, so the control plane is now your attack surface, and the workers need /dev/kvm.",
-      "Snapshots, checkpoint and rollback are incubating and answer as if they do not exist unless enabled for your organisation.",
-    ],
-    sources: [
-      { label: "perplexityai/SPACE", href: "https://github.com/perplexityai/SPACE" },
-      {
-        label: "SPACE architecture",
-        href: "https://github.com/perplexityai/SPACE/blob/main/docs/architecture.md",
-      },
-    ],
-  },
 ];
 
 const RENTED: { id: RentedId; name: string }[] = [
@@ -290,6 +225,22 @@ const NONE = "Not documented";
 
 /** The rented sandboxes on one table: where you call them from, the machine, its state, its network. */
 const ROWS: { group: string; label: string; values: Record<RentedId, string> }[] = [
+  {
+    group: "Operating environment",
+    label: "Who runs it",
+    values: Object.fromEntries(RENTED.map((v) => [v.id, deliveryLine(systemById(v.id))])) as Record<
+      RentedId,
+      string
+    >,
+  },
+  {
+    group: "Operating environment",
+    label: "Source",
+    values: Object.fromEntries(RENTED.map((v) => [v.id, systemById(v.id).openSource])) as Record<
+      RentedId,
+      string
+    >,
+  },
   {
     group: "Operating environment",
     label: "You call it from",
@@ -494,7 +445,10 @@ const WALL_TONE: Record<Wall, "shared" | "micro" | "warn"> = {
   vm: "micro",
 };
 
-const AXIS: Wall[] = ["process", "container", "system", "isolate", "gvisor", "microvm", "vm"];
+// Only the walls a rented sandbox actually uses; nobody rents a process sandbox or a system container.
+const AXIS = (
+  ["process", "container", "system", "isolate", "gvisor", "microvm", "vm"] as Wall[]
+).filter((w) => ENTRIES.some((e) => e.walls.some((x) => x.family === w)));
 
 const RENTED_TAKEAWAYS = [
   {
@@ -510,15 +464,14 @@ const RENTED_TAKEAWAYS = [
     body: "Cloudflare offers a microVM or an isolate, Modal gVisor or a VM, Daytona a container or a VM. The features you ask for choose for you: memory pause and fork are VM-only on Daytona, GPUs gVisor-only and Docker VM-only on Modal, Linux at all means a Container on Cloudflare. Ask which class a given sandbox got, not which vendor.",
   },
   {
+    title: "Rented does not have to mean closed",
+    body: "E2B's runtime is Apache-2.0 and runs on one machine of yours or in your own cloud, and Archil deploys into your account (BYOC). Cloudflare, Vercel and Modal open their SDKs and keep the platform. Daytona went the other way: its AGPL repository was frozen in June 2026 and development moved private. If the requirement is the rented shape on hardware you own, those two plus Perplexity's SPACE are the routes; SPACE has its own row under Systems.",
+  },
+  {
     title: "State is where they compete",
     body: "Every wall here is a hypervisor or close to one. What differs is what comes back: nothing on Cloudflare without a snapshot, the filesystem on Vercel by default, memory on E2B and Archil and Daytona's VMs, an experiment on Modal. Archil also pulls the work loose from the compute, with a disk that mounts in four of the other five.",
   },
 ];
-
-const OPEN_TAKEAWAY = {
-  title: "Policy climbs above the wall",
-  body: "Marc Brooker's case for Box is a claim about altitude. A VMM sees TLS ciphertext and block offsets, which is perfect for blunt rules (all traffic to this gateway) and useless for 'only push tested code'. Syscalls see open and connect. Only an interpreter, a broker or a proxy sees git push or an MCP tool call. So Box uses the kernel sandbox as a funnel and recommends a microVM under it for tenants: two layers, each doing what it can see. SPACE is the other half of that pairing, the rented column's microVM fleet run on your own hardware.",
-};
 
 function EntryCard({ e }: { e: Entry }) {
   const layer = LAYERS.find((l) => l.id === e.layer)!;
@@ -529,8 +482,9 @@ function EntryCard({ e }: { e: Entry }) {
     >
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-xl font-medium tracking-tight">{e.name}</h3>
-        <Badge tone={e.origin === "open" ? "ok" : "default"}>
-          {e.origin === "open" ? "Open source" : "Rented"}
+        <Badge tone="default">{DELIVERY_LABELS[systemById(e.id).delivery].name}</Badge>
+        <Badge tone={systemById(e.id).openness === "open" ? "ok" : "shared"}>
+          {OPENNESS_LABELS[systemById(e.id).openness]}
         </Badge>
       </div>
       <p className="mt-1 text-xs text-subtle">
@@ -556,9 +510,9 @@ function EntryCard({ e }: { e: Entry }) {
 
       <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4">
         <span className="font-mono text-[11px] tracking-wide text-subtle uppercase">
-          {e.system ? "Full row" : "Nearest here"}
+          Full row, then nearest
         </span>
-        {(e.system ? [e.system, ...e.near] : e.near).map((id) => (
+        {[e.id as SystemId, ...e.near].map((id) => (
           <a
             key={id}
             href={`#system-${id}`}
@@ -691,67 +645,32 @@ function RentedTable() {
 }
 
 export function Landscape() {
-  const [origin, setOrigin] = useState<Origin | "all">("all");
-  const onAxis = ENTRIES.filter((e) => origin === "all" || e.origin === origin);
-  const rented = ENTRIES.filter((e) => e.origin === "rented");
-  const open = ENTRIES.filter((e) => e.origin === "open");
-
   return (
     <div className="space-y-12">
       <div className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)] md:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="font-mono text-[11px] tracking-wide text-subtle uppercase">
-            Where each wall sits
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {(
-              [
-                ["all", "All eight"],
-                ["rented", "Rented"],
-                ["open", "Open source"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={origin === id}
-                onClick={() => setOrigin(id)}
-                className={cn(
-                  "h-9 rounded-full px-3 font-mono text-[11px] tracking-wide uppercase transition-colors duration-150",
-                  origin === id
-                    ? "bg-accent text-accent-fg"
-                    : "bg-surface text-muted hover:text-fg",
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-7">
+        <p className="font-mono text-[11px] tracking-wide text-subtle uppercase">
+          Where each rented wall sits
+        </p>
+        <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
           {AXIS.map((w) => {
-            const here = onAxis.flatMap((e) =>
+            const here = ENTRIES.flatMap((e) =>
               e.walls.filter((x) => x.family === w).map((x) => ({ e, via: x.via })),
             );
             return (
               <li key={w} className="rounded-lg bg-surface p-3">
                 <Badge tone={WALL_TONE[w]}>{WALL_NAME[w]}</Badge>
                 <ul className="mt-3 space-y-2">
-                  {here.length ? (
-                    here.map(({ e, via }) => (
-                      <li key={e.id + via} className="text-sm leading-snug">
-                        <a
-                          href={`#landscape-${e.id}`}
-                          className="font-medium text-fg hover:underline"
-                        >
-                          {e.name}
-                        </a>
-                        <span className="block text-xs text-muted">{via}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-xs text-subtle">None of these</li>
-                  )}
+                  {here.map(({ e, via }) => (
+                    <li key={e.id + via} className="text-sm leading-snug">
+                      <a
+                        href={`#landscape-${e.id}`}
+                        className="font-medium text-fg hover:underline"
+                      >
+                        {e.name}
+                      </a>
+                      <span className="block text-xs text-muted">{via}</span>
+                    </li>
+                  ))}
                 </ul>
               </li>
             );
@@ -765,17 +684,18 @@ export function Landscape() {
             Rented · six fleets
           </p>
           <h3 className="mt-2 max-w-3xl text-xl font-medium tracking-tight">
-            Same question, six operating environments: what do you call, what boots, what survives,
-            what leaves.
+            Same question, six operating environments: who runs it, what do you call, what boots,
+            what survives, what leaves.
           </h3>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
             Each cell is what the vendor's current docs say. "Not documented" means the docs read
-            did not say, not that the feature is missing.
+            did not say, not that the feature is missing. Every vendor also has a full row under
+            Systems, in the matrix and in the threat lab.
           </p>
         </div>
         <RentedTable />
         <div className="grid gap-3 lg:grid-cols-2">
-          {rented.map((e) => (
+          {ENTRIES.map((e) => (
             <EntryCard key={e.id} e={e} />
           ))}
         </div>
@@ -784,23 +704,6 @@ export function Landscape() {
             <Takeaway key={t.title} n={i + 1} {...t} />
           ))}
         </div>
-      </div>
-
-      <div className="space-y-6">
-        <div>
-          <p className="font-mono text-xs tracking-[0.18em] text-subtle uppercase">
-            New in open source · two
-          </p>
-          <h3 className="mt-2 max-w-3xl text-xl font-medium tracking-tight">
-            A policy engine above a kernel fence, and the rented column you can run yourself.
-          </h3>
-        </div>
-        <div className="grid gap-3 lg:grid-cols-2">
-          {open.map((e) => (
-            <EntryCard key={e.id} e={e} />
-          ))}
-        </div>
-        <Takeaway n={RENTED_TAKEAWAYS.length + 1} {...OPEN_TAKEAWAY} />
       </div>
     </div>
   );
