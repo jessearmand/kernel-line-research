@@ -112,7 +112,9 @@ export function StackExplorer() {
                   ? "Same wall as a microVM, different guest: a whole macOS or Windows. A kernel CVE dies in the guest XNU or NT. What this row adds is the OS the agent's job needs — Xcode, codesign, MSVC — and what it costs is a desktop-class VM, Apple's two-guest cap, and every host-guest convenience you enable being a hole you chose."
                   : family === "system"
                   ? "Unprivileged LXC maps container root to a high host uid, and AppArmor is on. That is a better accident story than stock Docker. The kernel is still this one. Pere Villega's Sandbox for Claude and discobox's boxes live here: a machine, not a wall. discobox's wall is its pool host, and on Linux by default that host is your own Docker daemon."
-                  : "There is no second kernel. Namespaces, Seatbelt, and Landlock are all asking the same kernel that the attacker is already talking to. Isolation here is a policy, and policies have holes."}
+                  : family === "container"
+                    ? "There is no second kernel. Namespaces, cgroups and seccomp are all asking the same kernel that the attacker is already talking to. Isolation here is a policy, and policies have holes. The one marked exception is Modal's default: under gVisor the container's syscalls are answered by a user-space kernel, so the trace stops at gVisor's own surface instead of reaching the host kernel. Daytona's default class is listed with its runtime unnamed, so this row is the safe assumption, not a finding."
+                    : "There is no second kernel. Namespaces, Seatbelt, and Landlock are all asking the same kernel that the attacker is already talking to. Isolation here is a policy, and policies have holes."}
             </p>
           </div>
           <div className="mt-8 border-t border-border pt-4">

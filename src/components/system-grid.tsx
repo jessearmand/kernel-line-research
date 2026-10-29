@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { SYSTEMS, SCORE_LABELS, kernelDetail, kernelLabel, type Score, type System, type SystemId } from "@/lib/sandboxes";
+import {
+  OPENNESS_LABELS,
+  SCORE_LABELS,
+  SYSTEMS,
+  deliveryLine,
+  kernelDetail,
+  kernelLabel,
+  type Score,
+  type System,
+  type SystemId,
+} from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +38,10 @@ function ScoreRow({ label, value }: { label: string; value: Score }) {
         {Array.from({ length: 5 }).map((_, i) => (
           <span
             key={i}
-            className={cn("h-1.5 flex-1 rounded-full", i < value ? "bg-accent" : "bg-border-strong")}
+            className={cn(
+              "h-1.5 flex-1 rounded-full",
+              i < value ? "bg-accent" : "bg-border-strong",
+            )}
           />
         ))}
       </div>
@@ -45,7 +58,8 @@ function SystemBody({ system }: { system: System }) {
         {[
           ["VMM", system.vmm],
           ["Kernel", kernelDetail(system)],
-          ["Source", system.openSource],
+          ["Who runs it", deliveryLine(system)],
+          ["Source", `${OPENNESS_LABELS[system.openness]}. ${system.openSource}`],
           ["Platforms", system.platforms],
           ["Startup", system.startup],
           ["Weight", system.overhead],
@@ -143,6 +157,9 @@ export function SystemGrid() {
             <p className="mt-4 text-sm leading-relaxed text-fg">{s.oneLiner}</p>
             <p className="mt-3 font-mono text-[11px] text-subtle uppercase">
               {s.maker} · {s.role} · {kernelLabel(s)}
+            </p>
+            <p className="mt-1 font-mono text-[11px] text-subtle uppercase">
+              {deliveryLine(s).split(";")[0]} · {OPENNESS_LABELS[s.openness]}
             </p>
             <div className="mt-5 space-y-2">
               <ScoreRow label="Isolation" value={s.scores.isolation} />

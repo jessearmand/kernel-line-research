@@ -51,7 +51,7 @@ export function Spectrum() {
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <p className="font-mono text-xs tracking-[0.18em] text-subtle uppercase">01 · Spectrum</p>
         <h2 className="mt-3 max-w-3xl text-2xl font-medium tracking-tight">
-          Five families. Seventeen products. One question: whose kernel is it?
+          Five families. Twenty-four products. One question: whose kernel is it?
         </h2>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted">
           Process sandboxes, app containers, and system containers all ask the host
@@ -59,12 +59,13 @@ export function Spectrum() {
           question never reaches the host. System containers are the missing row:
           a full Linux machine, still that kernel. Full VMs are the row Linux sandboxes
           skip: the guest is macOS or Windows, because the agent's job is Xcode or MSVC.
-          Two of the seventeen, OpenShell and discobox, are control planes that can sit on
+          Two of the twenty-four, OpenShell and discobox, are control planes that can sit on
           more than one row, so read the row of the driver or pool you will run.
           Two primitives sit off this axis
           — gVisor's user-space kernel and V8/Wasm runtimes with no kernel at all —
-          and the hosted sandboxes you can rent (E2B, Vercel Sandbox, Modal, Cloudflare
-          Sandbox) are one of these four or those two, run on someone else's fleet.
+          and the hosted sandboxes you can rent (Cloudflare, Vercel, E2B, Modal, Daytona,
+          Archil — side by side in the Landscape section) are one of these rows or those two, run
+          on someone else's fleet — increasingly more than one row, picked per sandbox.
           Read left to right and the product changes: the first two families subtract
           from your machine — a policy or a namespace around a process — and the other
           three hand the agent a machine of its own.

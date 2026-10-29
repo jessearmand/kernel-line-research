@@ -3,20 +3,41 @@ import { SYSTEMS, kernelLabel, type SystemId } from "@/lib/sandboxes";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Job = "wrap" | "embed" | "browser" | "pair" | "machine" | "mac" | "windows" | "desktop" | "gpu";
+type Job =
+  "wrap" | "embed" | "browser" | "pair" | "machine" | "mac" | "windows" | "desktop" | "gpu";
 type Threat = "accident" | "hostile" | "tenant";
 type DockerNeed = "yes" | "no";
 type Where = "laptop" | "cloud" | "embed";
 
 const JOBS: { id: Job; label: string; hint: string }[] = [
   { id: "wrap", label: "Wrap a coding CLI", hint: "Claude, Codex, Gemini, Copilot, YOLO" },
-  { id: "machine", label: "Agent needs a full Linux machine", hint: "apt, systemd, sudo, nested Docker" },
-  { id: "embed", label: "Execute untrusted code", hint: "Your product runs model-written programs" },
+  {
+    id: "machine",
+    label: "Agent needs a full Linux machine",
+    hint: "apt, systemd, sudo, nested Docker",
+  },
+  {
+    id: "embed",
+    label: "Execute untrusted code",
+    hint: "Your product runs model-written programs",
+  },
   { id: "browser", label: "Browser agents at scale", hint: "Cloud Chromium, snapshots, tenants" },
-  { id: "pair", label: "Interactive pair-programming", hint: "Stay in the repo, don't wrap anything" },
+  {
+    id: "pair",
+    label: "Interactive pair-programming",
+    hint: "Stay in the repo, don't wrap anything",
+  },
   { id: "mac", label: "Agent needs macOS", hint: "Xcode, codesign, Simulator, Safari" },
-  { id: "windows", label: "Agent needs Windows", hint: "MSVC, kernel debugging, a Windows desktop" },
-  { id: "desktop", label: "Computer-use agent", hint: "A Linux desktop: screenshots, clicks, a browser" },
+  {
+    id: "windows",
+    label: "Agent needs Windows",
+    hint: "MSVC, kernel debugging, a Windows desktop",
+  },
+  {
+    id: "desktop",
+    label: "Computer-use agent",
+    hint: "A Linux desktop: screenshots, clicks, a browser",
+  },
   { id: "gpu", label: "GPU or heavy compute", hint: "Local models, simulators, big builds" },
 ];
 
@@ -26,7 +47,12 @@ const THREATS: { id: Threat; label: string; hint: string }[] = [
   { id: "tenant", label: "Hostile tenants", hint: "Someone else's agent on your host" },
 ];
 
-function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): {
+function recommend(
+  job: Job,
+  threat: Threat,
+  docker: DockerNeed,
+  where: Where,
+): {
   winner: SystemId;
   also: SystemId[];
   why: string;
@@ -35,7 +61,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     if (threat !== "accident" || where !== "laptop") {
       return {
         winner: "hypeman",
-        also: ["cua-sandbox", "microsandbox", "discobox"],
+        also: ["cua-sandbox", "e2b", "microsandbox", "discobox"],
         why: "A hostile page or a fleet of desktops wants a wall per session and fast restore. hypeman runs a VM per browser with snapshots and ingress; microsandbox is the embeddable sibling; Cua Sandbox is the rented version with a computer-use API. The wall is the smaller half of the job: also plan an egress allowlist, a fresh profile with no signed-in accounts, a human gate on consequential actions, and keeping the agent loop outside the box. Hosted desktops (E2B Desktop, Cua Fleets) sell the same shape if you would rather not run it.",
       };
     }
@@ -49,8 +75,8 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     if (where === "cloud") {
       return {
         winner: "openshell",
-        also: ["hypeman", "incus"],
-        why: "You are scheduling accelerators for other people. OpenShell takes GPUs through CDI on Docker and Podman, as a Kubernetes resource limit, or as one VFIO device on its VM driver, under one policy. Its default drivers share the host kernel, so use Kata or the VM driver for hostile tenants.",
+        also: ["modal", "daytona", "hypeman"],
+        why: "You are scheduling accelerators for other people. OpenShell takes GPUs through CDI on Docker and Podman, as a Kubernetes resource limit, or as one VFIO device on its VM driver, under one policy. Its default drivers share the host kernel, so use Kata or the VM driver for hostile tenants. If you would rather rent the cards: Modal runs GPUs under gVisor (never on its VM runtime), and Daytona's GPU class takes up to eight per sandbox, spot or on demand.",
       };
     }
     if (threat !== "accident") {
@@ -103,21 +129,29 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
         (docker === "yes"
           ? " Docker Desktop inside a Windows guest needs nested virt: Hyper-V exposes it, Parallels can, Virtualization.framework does not."
           : "") +
-        (where === "cloud" ? " This is a workstation answer; a Windows fleet is Hyper-V or a cloud you rent, not this page." : ""),
+        (where === "cloud"
+          ? " This is a workstation answer; a Windows fleet is Hyper-V or a cloud you rent, not this page."
+          : ""),
     };
   }
   if (job === "browser" || (threat === "tenant" && where !== "laptop")) {
     return {
       winner: "hypeman",
-      also: job === "browser" ? ["cua-sandbox", "microsandbox"] : ["microsandbox"],
-      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If the agent must drive a whole desktop rather than a Chromium, Cua Sandbox is the computer-use shape: shell, PTY and GUI actions on one machine, from a Docker container up to a Lume macOS guest, locally or from a Fleet pool. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
+      also: job === "browser" ? ["cua-sandbox", "microsandbox"] : ["space", "e2b", "microsandbox"],
+      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If the agent must drive a whole desktop rather than a Chromium, Cua Sandbox is the computer-use shape: shell, PTY and GUI actions on one machine, from a Docker container up to a Lume macOS guest, locally or from a Fleet pool. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox, Fly Machines and Archil sell Firecracker microVMs, Modal sells gVisor or a VM, Daytona a container or a VM by class — same unit, someone else's fleet, and the question becomes who holds your secrets. Perplexity's SPACE is the open-source middle: an E2B-compatible Firecracker fleet you run on your own Kubernetes.",
     };
   }
-  if (where === "cloud" && (job === "embed" || ((job === "wrap" || job === "pair") && threat !== "accident"))) {
+  if (
+    where === "cloud" &&
+    (job === "embed" || ((job === "wrap" || job === "pair") && threat !== "accident"))
+  ) {
     return {
       winner: "cloudflare",
-      also: threat === "tenant" ? ["hypeman", "microsandbox"] : ["openshell", "hypeman", "docker-sbx"],
-      why: "You want a fleet and you do not want to run a hypervisor. Cloudflare Sandbox is a Firecracker VM per sandbox ID, started from a Worker, with the credential-injecting egress proxy built in — the token stays in the Worker. Rootless Docker-in-Docker is documented for builds. hypeman if you would rather own the control plane, snapshots and GPU; sbx if the 'fleet' is actually one developer's laptop.",
+      also:
+        threat === "tenant"
+          ? ["e2b", "vercel", "space", "hypeman"]
+          : ["vercel", "e2b", "openshell", "hypeman"],
+      why: "You want a fleet and you do not want to run a hypervisor. Cloudflare Sandbox is a Firecracker VM per sandbox name, started from a Durable Object in your Worker with internet off, and the credential-injecting egress proxy built in — the token stays in the Worker. Vercel Sandbox is the same Firecracker shape called from anywhere, with live egress rules that inject the key, a filesystem that persists across stops, and claude and codex preinstalled; E2B if you need memory pause that keeps. hypeman if you would rather own the control plane, snapshots and GPU; sbx if the 'fleet' is actually one developer's laptop.",
     };
   }
   if (where === "cloud" && (job === "wrap" || job === "pair")) {
@@ -130,23 +164,26 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
   if (job === "machine") {
     return {
       winner: "code-on-incus",
-      also: threat === "hostile" ? ["incus", "docker-sbx"] : ["incus", "discobox", "yolobox", "docker-sbx"],
+      also:
+        threat === "hostile"
+          ? ["incus", "docker-sbx"]
+          : ["incus", "discobox", "yolobox", "docker-sbx"],
       why: "You wanted a laptop, not a process. Incus system containers are that shape: systemd, apt, sudo, nested Docker, CoW clones. code-on-incus packages it — coi shell puts the agent in the box with nftables egress modes and a monitor that pauses on bulk reads and kills on a reverse shell. Plain Incus if you would rather script it yourself, as Pere Villega did. discobox is the other packaged version, aimed at several boxes on one repo with the work coming back as git commits. On a Mac the Linux VM is part of the pick: coi runs on Colima or Lima (MIT) as well as OrbStack, and OrbStack is closed source and free only for personal use, so an all-open-source stack is Incus on Colima with coi. Promote to sbx the moment the threat includes a kernel CVE — Incus LXC still shares the host kernel.",
     };
   }
   if (job === "embed") {
     return {
       winner: "microsandbox",
-      also: ["hypeman"],
-      why: "An SDK that boots a libkrun microVM as a child process is the shape of 'my agent has a sandbox tool'. hypeman if you outgrow the library and want a server, restore, and GPU. A hosted sandbox API — Cloudflare Sandbox, E2B, Vercel Sandbox, Modal — is the same tool with no hypervisor to run; pick it when your product is not on a machine that has /dev/kvm, and pick Cloudflare when the product is already a Worker.",
+      also: ["hypeman", "space", "e2b"],
+      why: "An SDK that boots a libkrun microVM as a child process is the shape of 'my agent has a sandbox tool'. hypeman if you outgrow the library and want a server, restore, and GPU. A hosted sandbox API — Cloudflare Sandbox, E2B, Vercel Sandbox, Modal — is the same tool with no hypervisor to run; pick it when your product is not on a machine that has /dev/kvm, and pick Cloudflare when the product is already a Worker. Archil when the workspace must outlive the VM and fork in milliseconds; SPACE when you want that API on your own fleet.",
     };
   }
   if (job === "pair") {
     if (threat === "hostile") {
       return {
         winner: "codex",
-        also: ["claude-code", "docker-sbx"],
-        why: "Stay in the harness. Codex is default-on, network-off, kernel-enforced, and its approval layer can route escalations to a reviewer agent instead of you. Claude Code is faster to live with (allowlist proxy, richer hooks) and weaker on egress. nono if you want the same kernel fence around whichever CLI, with a tighter box per tool. Put any of them inside sbx if the threat includes a kernel bug or docker.sock.",
+        also: ["claude-code", "strands-box", "docker-sbx"],
+        why: "Stay in the harness. Codex is default-on, network-off, kernel-enforced, and its approval layer can route escalations to a reviewer agent instead of you. Claude Code is faster to live with (allowlist proxy, richer hooks) and weaker on egress. nono if you want the same kernel fence around whichever CLI, with a tighter box per tool. Strands Box (developer preview, macOS) if the rule you need is semantic — push only after the tests passed. Put any of them inside sbx if the threat includes a kernel bug or docker.sock.",
       };
     }
     return {
@@ -192,7 +229,12 @@ function Chip<T extends string>({
           )}
         >
           <span className="block text-sm font-medium">{o.label}</span>
-          <span className={cn("mt-1 block text-xs", value === o.id ? "text-accent-fg/70" : "text-muted")}>
+          <span
+            className={cn(
+              "mt-1 block text-xs",
+              value === o.id ? "text-accent-fg/70" : "text-muted",
+            )}
+          >
             {o.hint}
           </span>
         </button>
@@ -206,10 +248,7 @@ export function Picker() {
   const [threat, setThreat] = useState<Threat>("accident");
   const [docker, setDocker] = useState<DockerNeed>("yes");
   const [where, setWhere] = useState<Where>("laptop");
-  const result = useMemo(
-    () => recommend(job, threat, docker, where),
-    [job, threat, docker, where],
-  );
+  const result = useMemo(() => recommend(job, threat, docker, where), [job, threat, docker, where]);
   const winner = SYSTEMS.find((s) => s.id === result.winner)!;
 
   return (
@@ -260,7 +299,17 @@ export function Picker() {
         <h3 className="mt-2 text-2xl font-medium tracking-tight">{winner.name}</h3>
         <p className="mt-1 text-sm text-muted">{winner.short}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Badge tone={winner.family === "microvm" || winner.family === "vm" ? "micro" : winner.family === "container" ? "warn" : winner.family === "system" ? "ok" : "shared"}>
+          <Badge
+            tone={
+              winner.family === "microvm" || winner.family === "vm"
+                ? "micro"
+                : winner.family === "container"
+                  ? "warn"
+                  : winner.family === "system"
+                    ? "ok"
+                    : "shared"
+            }
+          >
             {winner.family}
           </Badge>
           <Badge>{kernelLabel(winner)}</Badge>
@@ -268,7 +317,9 @@ export function Picker() {
         <p className="mt-5 text-sm leading-relaxed text-fg">{result.why}</p>
         {result.also.length ? (
           <div className="mt-6 border-t border-border pt-4">
-            <p className="font-mono text-[11px] tracking-wide text-subtle uppercase">Also consider</p>
+            <p className="font-mono text-[11px] tracking-wide text-subtle uppercase">
+              Also consider
+            </p>
             <ul className="mt-2 space-y-1 text-sm text-muted">
               {result.also.map((id) => {
                 const s = SYSTEMS.find((x) => x.id === id)!;

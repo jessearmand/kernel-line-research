@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BeyondKernel } from "@/components/beyond-kernel";
 import { ComparisonMatrix } from "@/components/comparison-matrix";
 import { HarnessPanel } from "@/components/harness-panel";
+import { DeliveryMap } from "@/components/delivery-map";
 import { Hero, Spectrum } from "@/components/hero";
+import { Landscape } from "@/components/landscape";
 import { LayerStack } from "@/components/layer-stack";
 import { MacRuntime } from "@/components/mac-runtime";
 import { MicrovmImpact } from "@/components/microvm-impact";
@@ -51,10 +53,11 @@ function Home() {
         </Section>
         <Section
           id="systems"
-          eyebrow="05 · Seventeen systems"
-          title="Wrappers, harnesses, a machine runtime and its wraps, microVM runtimes, five full VMs, two control planes."
-          lede="nono, yolobox, sbx and discobox wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example, code-on-incus the packaged one, with nftables egress and a monitor that pauses or kills the box. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent. GhostVM, UTM, Lume and agent-sandbox-vm boot a macOS or Windows guest, for the jobs no Linux box can do. Cua Sandbox is the computer-use version: one machine the agent both codes in and clicks through, from a Docker container up to a Lume macOS guest. OpenShell is a policy gateway over Docker, Kubernetes or a microVM, and discobox is a box manager over a pool host that is a VM or a Docker daemon depending on your OS."
+          eyebrow="05 · Twenty-four systems"
+          title="Wrappers, harnesses, a machine runtime and its wraps, microVM runtimes and fleets, five full VMs, two control planes, six you rent."
+          lede="nono, yolobox, sbx and discobox wrap existing CLIs. Claude Code and Codex sandbox themselves. Incus is the machine you install an agent into — Pere Villega's Sandbox for Claude is the worked example, code-on-incus the packaged one, with nftables egress and a monitor that pauses or kills the box. microsandbox and hypeman are VM runtimes you operate; Cloudflare Sandbox is one you rent. GhostVM, UTM, Lume and agent-sandbox-vm boot a macOS or Windows guest, for the jobs no Linux box can do. Cua Sandbox is the computer-use version: one machine the agent both codes in and clicks through, from a Docker container up to a Lume macOS guest. OpenShell is a policy gateway over Docker, Kubernetes or a microVM, and discobox is a box manager over a pool host that is a VM or a Docker daemon depending on your OS. Strands Box is the newest wrapper: a macOS sandbox whose only exit is a semantic policy engine. SPACE is a Firecracker fleet you run yourself. Vercel, E2B, Modal, Daytona and Archil join Cloudflare as the fleets you rent, compared side by side in the Landscape section. First, who supplies the machine."
         >
+          <DeliveryMap />
           <SystemGrid />
         </Section>
         <Section
@@ -107,8 +110,16 @@ function Home() {
           <MicrovmImpact />
         </Section>
         <Section
+          id="landscape"
+          eyebrow="12 · Landscape"
+          title="Six rented sandboxes, side by side."
+          lede="Cloudflare, Vercel, E2B, Modal, Daytona and Archil rent you the machine. None needs a new family: each sits on the five-family axis or beside it, sometimes on two at once. One table compares them on who runs it, what you call it from, what boots, what survives, and what may leave."
+        >
+          <Landscape />
+        </Section>
+        <Section
           id="pick"
-          eyebrow="12 · Pick"
+          eyebrow="13 · Pick"
           title="Tell it the job. It will not recommend a hypervisor for ls."
         >
           <Picker />

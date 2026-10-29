@@ -12,6 +12,7 @@ const LINKS = [
   { href: "#harness", label: "Harness" },
   { href: "#mac", label: "Mac" },
   { href: "#microvm", label: "Kernel" },
+  { href: "#landscape", label: "Landscape" },
   { href: "#pick", label: "Pick" },
 ];
 
