@@ -3,6 +3,7 @@ import { BeyondKernel } from "@/components/beyond-kernel";
 import { ComparisonMatrix } from "@/components/comparison-matrix";
 import { HarnessPanel } from "@/components/harness-panel";
 import { Hero, Spectrum } from "@/components/hero";
+import { Landscape } from "@/components/landscape";
 import { LayerStack } from "@/components/layer-stack";
 import { MacRuntime } from "@/components/mac-runtime";
 import { MicrovmImpact } from "@/components/microvm-impact";
@@ -107,8 +108,16 @@ function Home() {
           <MicrovmImpact />
         </Section>
         <Section
+          id="landscape"
+          eyebrow="12 · Landscape"
+          title="Two new open-source boxes, three fleets you can already rent."
+          lede="Strands Box and SPACE arrived in open source this autumn; Daytona, Modal and Archil have been renting sandboxes for longer. None needs a new row. Each sits on the five-family axis or beside it, and each moves one of the six layers further than the systems above. Filter, then read where the wall is and which layer is the point."
+        >
+          <Landscape />
+        </Section>
+        <Section
           id="pick"
-          eyebrow="12 · Pick"
+          eyebrow="13 · Pick"
           title="Tell it the job. It will not recommend a hypervisor for ls."
         >
           <Picker />

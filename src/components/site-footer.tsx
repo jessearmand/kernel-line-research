@@ -2,7 +2,7 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border py-12">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
-        <p className="font-mono text-xs tracking-[0.18em] text-subtle uppercase">Sources · Sep 2026</p>
+        <p className="font-mono text-xs tracking-[0.18em] text-subtle uppercase">Sources · Sep–Oct 2026</p>
         <ul className="mt-4 grid gap-2 text-sm text-muted md:grid-cols-2">
           <li>
             <a className="hover:text-fg" href="https://yolobox.dev/">
@@ -149,6 +149,31 @@ export function SiteFooter() {
               Lume: unattended macOS setup · SIP via Recovery · CLI reference · limits
             </a>
           </li>
+          <li>
+            <a className="hover:text-fg" href="https://strandsagents.com/blog/strands-box-the-big-picture/">
+              Strands Box: The Big Picture · strands-agents/box · Dogwood
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://github.com/perplexityai/SPACE">
+              perplexityai/SPACE · architecture · E2B Compatibility Wrapper
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://www.daytona.io/docs/en/sandboxes.md">
+              Daytona sandboxes · VM, Windows, macOS and GPU classes · lifecycle
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://modal.com/docs/guide/sandboxes">
+              Modal Sandboxes · networking · snapshots · coding-agent example
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://docs.archil.com/compute/sandboxes/introduction.md">
+              Archil · persistent sandboxes · disks, forks, firewall
+            </a>
+          </li>
         </ul>
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-subtle">
           Scores are relative and qualitative. Startup numbers are vendor-reported or typical of
@@ -164,7 +189,9 @@ export function SiteFooter() {
           host-local connections blocked, credential proxy) was taken from inside one such session
           in Sep 2026 and may change. Workload ratings in the Workloads section are judgement from these sources, not
           measurements. Firecracker's lack of GPU passthrough comes from its documented virtio-only device model and
-          third-party summaries, not a statement in its own docs.
+          third-party summaries, not a statement in its own docs. The Landscape entries (Strands Box,
+          SPACE, Daytona, Modal, Archil) were read from their docs and READMEs in late Oct 2026, not run; Strands Box
+          and SPACE's snapshot operations are preview or incubating.
         </p>
       </div>
     </footer>

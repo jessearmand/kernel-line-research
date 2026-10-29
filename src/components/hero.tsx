@@ -63,8 +63,9 @@ export function Spectrum() {
           more than one row, so read the row of the driver or pool you will run.
           Two primitives sit off this axis
           — gVisor's user-space kernel and V8/Wasm runtimes with no kernel at all —
-          and the hosted sandboxes you can rent (E2B, Vercel Sandbox, Modal, Cloudflare
-          Sandbox) are one of these four or those two, run on someone else's fleet.
+          and the hosted sandboxes you can rent (E2B, Vercel Sandbox, Modal, Daytona, Archil,
+          Cloudflare Sandbox) are one of these rows or those two, run on someone else's fleet —
+          increasingly more than one row, picked per sandbox.
           Read left to right and the product changes: the first two families subtract
           from your machine — a policy or a namespace around a process — and the other
           three hand the agent a machine of its own.

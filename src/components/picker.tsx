@@ -110,7 +110,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     return {
       winner: "hypeman",
       also: job === "browser" ? ["cua-sandbox", "microsandbox"] : ["microsandbox"],
-      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If the agent must drive a whole desktop rather than a Chromium, Cua Sandbox is the computer-use shape: shell, PTY and GUI actions on one machine, from a Docker container up to a Lume macOS guest, locally or from a Fleet pool. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox and Fly Machines sell Firecracker microVMs, Modal sells gVisor — same unit, someone else's fleet, and the question becomes who holds your secrets.",
+      why: "You need a fleet, not a wrapper. hypeman is the control plane Kernel already runs for isolated browsers — snapshots, ingress, a choice of VMMs. microsandbox is the lighter embeddable sibling if you just need many local VMs. If the agent must drive a whole desktop rather than a Chromium, Cua Sandbox is the computer-use shape: shell, PTY and GUI actions on one machine, from a Docker container up to a Lume macOS guest, locally or from a Fleet pool. If you would rather rent than operate a hypervisor: E2B, Vercel Sandbox, Fly Machines and Archil sell Firecracker microVMs, Modal sells gVisor or a VM, Daytona a container or a VM by class — same unit, someone else's fleet, and the question becomes who holds your secrets. Perplexity's SPACE is the open-source middle: an E2B-compatible Firecracker fleet you run on your own Kubernetes.",
     };
   }
   if (where === "cloud" && (job === "embed" || ((job === "wrap" || job === "pair") && threat !== "accident"))) {
@@ -138,7 +138,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     return {
       winner: "microsandbox",
       also: ["hypeman"],
-      why: "An SDK that boots a libkrun microVM as a child process is the shape of 'my agent has a sandbox tool'. hypeman if you outgrow the library and want a server, restore, and GPU. A hosted sandbox API — Cloudflare Sandbox, E2B, Vercel Sandbox, Modal — is the same tool with no hypervisor to run; pick it when your product is not on a machine that has /dev/kvm, and pick Cloudflare when the product is already a Worker.",
+      why: "An SDK that boots a libkrun microVM as a child process is the shape of 'my agent has a sandbox tool'. hypeman if you outgrow the library and want a server, restore, and GPU. A hosted sandbox API — Cloudflare Sandbox, E2B, Vercel Sandbox, Modal — is the same tool with no hypervisor to run; pick it when your product is not on a machine that has /dev/kvm, and pick Cloudflare when the product is already a Worker. Archil when the workspace must outlive the VM and fork in milliseconds; SPACE when you want that API on your own fleet.",
     };
   }
   if (job === "pair") {
@@ -146,7 +146,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
       return {
         winner: "codex",
         also: ["claude-code", "docker-sbx"],
-        why: "Stay in the harness. Codex is default-on, network-off, kernel-enforced, and its approval layer can route escalations to a reviewer agent instead of you. Claude Code is faster to live with (allowlist proxy, richer hooks) and weaker on egress. nono if you want the same kernel fence around whichever CLI, with a tighter box per tool. Put any of them inside sbx if the threat includes a kernel bug or docker.sock.",
+        why: "Stay in the harness. Codex is default-on, network-off, kernel-enforced, and its approval layer can route escalations to a reviewer agent instead of you. Claude Code is faster to live with (allowlist proxy, richer hooks) and weaker on egress. nono if you want the same kernel fence around whichever CLI, with a tighter box per tool. Strands Box (developer preview, macOS) if the rule you need is semantic — push only after the tests passed. Put any of them inside sbx if the threat includes a kernel bug or docker.sock.",
       };
     }
     return {
