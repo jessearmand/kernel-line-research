@@ -110,8 +110,8 @@ function Home() {
         <Section
           id="landscape"
           eyebrow="12 · Landscape"
-          title="Two new open-source boxes, three fleets you can already rent."
-          lede="Strands Box and SPACE arrived in open source this autumn; Daytona, Modal and Archil have been renting sandboxes for longer. None needs a new row. Each sits on the five-family axis or beside it, and each moves one of the six layers further than the systems above. Filter, then read where the wall is and which layer is the point."
+          title="Six rented sandboxes side by side, and two new open-source boxes."
+          lede="Cloudflare, Vercel, E2B, Modal, Daytona and Archil rent you the machine; Strands Box and SPACE arrived in open source this autumn. None needs a new family. Each sits on the five-family axis or beside it, and the rented six are compared on one table: what you call it from, what boots, what survives, and what may leave."
         >
           <Landscape />
         </Section>

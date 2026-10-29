@@ -117,7 +117,7 @@ function recommend(job: Job, threat: Threat, docker: DockerNeed, where: Where): 
     return {
       winner: "cloudflare",
       also: threat === "tenant" ? ["hypeman", "microsandbox"] : ["openshell", "hypeman", "docker-sbx"],
-      why: "You want a fleet and you do not want to run a hypervisor. Cloudflare Sandbox is a Firecracker VM per sandbox ID, started from a Worker, with the credential-injecting egress proxy built in — the token stays in the Worker. Rootless Docker-in-Docker is documented for builds. hypeman if you would rather own the control plane, snapshots and GPU; sbx if the 'fleet' is actually one developer's laptop.",
+      why: "You want a fleet and you do not want to run a hypervisor. Cloudflare Sandbox is a Firecracker VM per sandbox name, started from a Durable Object in your Worker with internet off, and the credential-injecting egress proxy built in — the token stays in the Worker. Vercel Sandbox is the same Firecracker shape called from anywhere, with live egress rules that inject the key, a filesystem that persists across stops, and claude and codex preinstalled; E2B if you need memory pause that keeps. hypeman if you would rather own the control plane, snapshots and GPU; sbx if the 'fleet' is actually one developer's laptop.",
     };
   }
   if (where === "cloud" && (job === "wrap" || job === "pair")) {

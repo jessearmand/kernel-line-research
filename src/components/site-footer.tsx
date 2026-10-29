@@ -106,12 +106,22 @@ export function SiteFooter() {
           </li>
           <li>
             <a className="hover:text-fg" href="https://gvisor.dev/">
-              gVisor · Modal sandbox security · Vercel Sandbox concepts (Firecracker)
+              gVisor · Modal sandbox security
             </a>
           </li>
           <li>
-            <a className="hover:text-fg" href="https://developers.cloudflare.com/sandbox/concepts/">
-              Cloudflare Sandbox SDK concepts · security model · outbound handlers · Containers lifecycle
+            <a className="hover:text-fg" href="https://vercel.com/docs/sandbox">
+              Vercel Sandbox · network policy · persistence · vercel.com/sandbox FAQ
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://docs.e2b.dev/">
+              E2B · persistence · internet access · e2b-dev/infra
+            </a>
+          </li>
+          <li>
+            <a className="hover:text-fg" href="https://developers.cloudflare.com/sandbox/">
+              Cloudflare Sandboxes · lifetime · security · outbound traffic · Container limits
             </a>
           </li>
           <li>
@@ -182,15 +192,15 @@ export function SiteFooter() {
           (all cores, half of RAM) come from sbx run --help, not the 2 CPU / 4 GiB cloud default.
           Cloud Codex and Claude Code on the web are
           different boxes from the local CLIs — the app treats each as two surfaces of one
-          product. Cloudflare's docs say only "its own VM"; the Firecracker attribution comes
-          from the Containers launch coverage, not the Sandbox SDK pages. OpenShell (commit 5acaaba) and discobox
+          product. Cloudflare's docs were rewritten in Sep–Oct 2026 and now name Firecracker
+          themselves; the 0.x Sandbox SDK this page first described is the legacy path. OpenShell (commit 5acaaba) and discobox
           (commit 4a7f956) were read from source and design records in Sep 2026, not run; both are moving fast.
           The Claude Code on the web observation (Firecracker guest kernel, vsock init,
           host-local connections blocked, credential proxy) was taken from inside one such session
           in Sep 2026 and may change. Workload ratings in the Workloads section are judgement from these sources, not
           measurements. Firecracker's lack of GPU passthrough comes from its documented virtio-only device model and
           third-party summaries, not a statement in its own docs. The Landscape entries (Strands Box,
-          SPACE, Daytona, Modal, Archil) were read from their docs and READMEs in late Oct 2026, not run; Strands Box
+          SPACE, Cloudflare, Vercel, E2B, Daytona, Modal, Archil) were read from their docs and READMEs in late Oct 2026, not run; Strands Box
           and SPACE's snapshot operations are preview or incubating.
         </p>
       </div>
