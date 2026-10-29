@@ -40,6 +40,11 @@ export type System = {
   maker: string;
   family: Family;
   /**
+   * Qualifies membership of the default family when the row's usual promise does not hold as is,
+   * e.g. a container whose syscalls go to gVisor rather than the host kernel.
+   */
+  familyVia?: string;
+  /**
    * Other families the same product reaches by configuration alone — a driver,
    * an image or a pool host — not a different product under the same name.
    * `family` stays the default deployment; the stack explorer lists these with
@@ -663,6 +668,7 @@ export const SYSTEMS: System[] = [
     short: "Rented gVisor container, or a VM when you need one",
     maker: "Modal",
     family: "container",
+    familyVia: "under gVisor: syscalls go to a user-space kernel, not the host's",
     deployments: [{ family: "microvm", via: "runtime set to a VM, its own Linux kernel" }],
     familyNote: "Containers created from code under gVisor, a user-space kernel that answers the workload's syscalls, so a Linux LPE has no Linux kernel to land on. Set the runtime to a VM for a real Linux kernel when the job needs Docker, FUSE or nested cgroups. Modal's own coding-agent example keeps the LangGraph loop and its OpenAI key in a Modal Function and only the generated code in the sandbox.",
     oneLiner: "modal.Sandbox.create(image=..., gpu=\"T4\") then sb.exec(\"python\", \"-c\", code) — the agent stays in a Function, the code runs under gVisor.",
@@ -709,6 +715,7 @@ export const SYSTEMS: System[] = [
     short: "Rented computer whose class sets the wall",
     maker: "Daytona",
     family: "container",
+    familyVia: "default class; its runtime is not named",
     deployments: [{ family: "microvm", via: "Linux VM class, own kernel" }, { family: "vm", via: "Windows, and macOS on dedicated Apple silicon" }],
     familyNote: "Sandboxes are Linux containers by default. A separate VM class gives a dedicated Linux VM or Windows guest created from VM snapshots, macOS runs on reserved Apple silicon, and GPU sandboxes take up to eight NVIDIA or AMD cards. The overview promises each sandbox a dedicated kernel; the class you created is what decides whether you got one.",
     oneLiner: "daytona.create() for a container, a VM snapshot for a Linux VM you can pause and fork with memory, or eight GPUs.",
@@ -2445,7 +2452,7 @@ export type FamilyMember = { id: SystemId; via?: string };
  */
 export const FAMILY_SYSTEMS: Record<Family, FamilyMember[]> = (() => {
   const byFamily: Record<Family, FamilyMember[]> = { process: [], container: [], system: [], microvm: [], vm: [] };
-  for (const s of SYSTEMS) byFamily[s.family].push({ id: s.id });
+  for (const s of SYSTEMS) byFamily[s.family].push({ id: s.id, via: s.familyVia });
   // Deployments after every default member, so each family leads with its own.
   for (const s of SYSTEMS) {
     for (const d of s.deployments ?? []) byFamily[d.family].push({ id: s.id, via: d.via });
